@@ -1,0 +1,36 @@
+﻿@{
+    Layout = "_Layout";
+}
+<script src="~/plugins/jQuery/jquery-2.2.3.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        function getTimeZone() {
+            //local
+            return /\((.*)\)/.exec(new Date().toString())[1];
+            ////Heroku
+            //var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
+            //var result = "GMT" + (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
+            //console.log(result);
+            //return result;
+        }
+        
+
+        $.ajax({
+            url: '@Url.Action("savetimezone","appointments")' + "?timezoneoffset=" + (0 - new Date().getTimezoneOffset()) + "&timezoneid=" + encodeURIComponent(getTimeZone()),
+            //data: JSON.stringify(messages),
+            type: 'post',
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                if (data != null) {
+
+                }
+            },
+            error: function (data) {
+            }
+        });
+
+    });
+
+
+</script>

@@ -1,0 +1,193 @@
+﻿@{
+    @Html.Raw(TempData["msg"])
+}
+
+@{
+    Layout = "";
+}
+@model OneDirect.ViewModels.LoginViewModel
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>One Direct Health Network Administrator Portal</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+          name='viewport'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <!--cache disable settings-->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!--base url-->
+    <base href="/" />
+
+    <!-- Bootstrap 3.3.2 -->
+    <link rel="stylesheet" href="~/bootstrap/css/bootstrap.min.css">
+
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"
+          rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <!--<link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet"
+          type="text/css" />-->
+    <!-- bootstrap wysihtml5 - text editor -->
+    <link href="~/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet">
+
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link href="~/plugins/iCheck/minimal/blue.css" rel="stylesheet">
+    <!-- Theme style -->
+    <link href="dist/css/AdminLTE.min.css" rel="stylesheet">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/jquery.base64.min.js"></script>
+    <script src="~/Scripts/jquery.base64.min.js"></script>
+
+    <link href="~/dist/css/skins/_all-skins.min.css" rel="stylesheet">
+    <link href="~/alertifyjs/css/alertify.css" rel="stylesheet" />
+    <style type="text/css">
+        div.busyLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background-color: lightgray;
+            opacity: .8;
+        }
+
+        img.ajax-loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -32px;
+            margin-top: -32px;
+            display: block;
+        }
+
+        .screenMask {
+            margin: 0px;
+            padding: 0px;
+            position: fixed;
+            right: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            z-index: 300001;
+            opacity: 0.5;
+            filter: alpha(opacity=70);
+            display: none;
+        }
+    </style>
+</head>
+<body class="login-page" style="height:auto">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        <div class="login-box">
+            <!-- BEGIN LOGO -->
+            <div class="login-logo">
+                <a href="#" style="cursor:default">
+                    <img src="~/images/inflowlogo240x80.png" height="80" width="240">
+                </a>
+            </div>
+            <div align="center" style="font-size: 17px; margin-top: 10px; margin-bottom: 10px;">Administrator | One Direct </div>
+            <div>
+
+                <!-- END LOGO -->
+                <!-- BEGIN LOGIN -->
+                <div class="login-box-body" style="border-radius:25px;">
+
+                    <div class="form-group">
+                        <label class="control-label visible-ie8 visible-ie9">Username</label>
+
+                        <div class="input-icon">
+                            <i class="fa fa-user"></i>
+                            @Html.TextBoxFor(model => model.UserId, new { @class = "form-control placeholder-no-fix" })
+                            @Html.ValidationMessageFor(model => model.UserId, null, new { @style = "color:red" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label visible-ie8 visible-ie9">Password</label>
+
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            @Html.TextBoxFor(model => model.Password, new { @class = "form-control placeholder-no-fix", @type = "password" })
+                            @Html.ValidationMessageFor(model => model.Password, null, new { @style = "color:red" })
+                        </div>
+                    </div>
+                    <div class="login-box-msg">
+                        <div>
+                            <a href="#">Forgot password?</a>
+
+                            <button type="submit" style="border-radius:5px;" class="btn green pull-right">
+                                Login <i class="m-icon-swapright m-icon-white">
+                                </i>
+                            </button>
+
+                        </div>
+                        <div id="ErrorMessage" style="font:bold 12px verdana;color:red"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BEGIN COPYRIGHT -->
+        </div>
+    }
+    <!-- /.content-wrapper -->
+    <footer class="main-footer" style="margin-left:0px; width:100%; height:60px; position:absolute;bottom:0; ">
+        <div class="pull-right hidden-xs">
+            <b>Version</b> 2.0
+        </div>
+        <img src="~/images/croosfire.png" height="20" width="80" /> <strong>Copyright &copy; 2016-2017 <a href="http://www.oasys-practice.com/">Oasys Practice LLC</a>.</strong>All rights reserved.
+    </footer>
+    <div id="divMask" class="screenMask">
+        <p style="position: fixed;left:50%;top:50%;">
+            <img src="~/images/loader.gif" alt="Loading..." style="z-index:400000;" />
+        </p>
+    </div>
+    <!-- ./wrapper -->
+    <!-- jQuery 2.1.3 -->
+    <style type="text/css">
+        td {
+            padding: 10px;
+        }
+    </style>
+    <script src="~/alertifyjs/alertify.js"></script>
+    <script src="~/js/helpers.js"></script>
+    <script type="text/javascript">
+        var charRegex = /\D+/g;
+        $(document).ready(function () {
+            hideMask();
+            $(window).on('beforeunload', function () {
+                showMask();
+            });
+
+
+        });
+
+        function showMask(isDelay) {
+            if (isDelay) {
+                setTimeout(function () {
+                    document.getElementById("divMask").style.display = "block";
+                }, 10);
+            }
+            else {
+                document.getElementById("divMask").style.display = "block";
+            }
+        }
+
+        function hideMask() {
+            document.getElementById("divMask").style.display = "none";
+        }
+
+          
+
+    </script>
+    @Html.Raw(TempData["msg"]);
+</body>
+</html>

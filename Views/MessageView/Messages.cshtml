@@ -1,0 +1,171 @@
+﻿@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Http
+@using System;
+@using System.Globalization;
+@model IEnumerable<OneDirect.Models.Messages>
+@{
+// Layout = null;
+}
+<style type="text/css">
+    .mask2 {
+        background-color: #000;
+        display: block;
+        height: 100%;
+        left: 0;
+        opacity: .8;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+</style>
+<section class="content-header" style="padding-bottom:20px">
+    <h1>
+        Messages
+        @*<small>Control panel</small>*@
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Messages</li>
+    </ol>
+</section>
+@*<div class="col-md-2">
+
+
+        @Html.ActionLink("Add PatientRx", "AddEdit", new { }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+
+    </div>*@
+<!-- Main content -->
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary direct-chat direct-chat-primary">
+                @*<div class="box-header with-border">
+                        <h3 class="box-title">Direct Chat</h3>
+                    </div>*@
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <!-- Conversations are loaded here -->
+                    <div class="direct-chat-messages">
+                        @if (Model != null && Model.Count() > 0)
+                        {
+                            @foreach (var item in Model)
+                            {
+                                @if (Context.Session.GetString("UserId").ToString().ToLower() != item.SenderId.ToLower())
+                                {
+                                    <div class="direct-chat-msg">
+                                        <div class="direct-chat-info clearfix">
+                                            <span class="direct-chat-name pull-left">@item.Sender.Name</span>
+                                            <span class="direct-chat-timestamp pull-right" date-value="formatdate">@item.DateCreated</span>
+                                        </div>
+                                        @*<img class="direct-chat-img" src="../dist/img/user1-128x128.jpg" alt="Message User Image">*@
+                                        <div class="direct-chat-text">
+                                            @item.BodyText
+                                        </div>
+                                    </div>
+                                }
+                                @if (Context.Session.GetString("UserId").ToString().ToLower() == item.SenderId.ToLower())
+                                {
+                                    <div class="direct-chat-msg right">
+                                        <div class="direct-chat-info clearfix">
+                                            <span class="direct-chat-name pull-right">@item.Sender.Name</span>
+                                            <span class="direct-chat-timestamp pull-left" date-value="formatdate">@item.DateCreated</span>
+                                        </div>
+                                        <!-- /.direct-chat-info -->
+                                        @*<img class="direct-chat-img" src="../dist/img/user3-128x128.jpg" alt="Message User Image">*@
+                                        <div class="direct-chat-text">
+                                            @item.BodyText
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+
+                    </div>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer">
+                    <div class="input-group">
+                        <input type="hidden" value="@ViewBag.PatientId" id="hdnPatientId" />
+                        <input type="hidden" value="@Context.Session.GetString("UserId")" id="hdnProviderId" />
+                        <input type="text" name="message" placeholder="Type Message ..." class="form-control" id="txtMessage">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-primary btn-flat" onclick="sendClick()">Send</button>
+                        </span>
+                    </div>
+                </div>
+                <!-- /.box-footer-->
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#example1').DataTable({
+            "stateSave": true,
+            "stateDuration": -1,
+            'aoColumnDefs': [{
+                'bSortable': false,
+                'aTargets': [-1] /* 1st one, start by the right */
+            }]
+        });
+        $("span[date-value='formatdate']").each(function () {
+
+            $(this).text(toValidDate($(this).text()));
+        })
+    });
+    function sendClick() {
+        if ($('#txtMessage').val() != "") {
+            showMask();
+            var messages = {
+                senderId: $('#hdnProviderId').val(),
+                receiverId: $('#hdnPatientId').val(),
+                subject: "test",
+                bodyText: $('#txtMessage').val(),
+                readStatus: 2,
+                attachment: ""
+            }
+            $.ajax({
+                url: '/api/Message',
+                data: JSON.stringify(messages),
+                type: 'post',
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    //console.log(data);
+                    location.reload();
+                },
+                error: function (data) {
+                    //console.log(data);
+                }
+            });
+        }
+        else
+        {
+
+            alert("Enter reply message");
+        }
+    }
+    function Cancel() {
+        $("#divmask").hide();
+        $("#popup").hide();
+    }
+    //function toValidDate(datestring) {
+    //    var dateFormat = 'MMMM Do YYYY, h:mm:ss a';
+    //    var testDateUtc = moment.utc(datestring);
+    //    var localDate = testDateUtc.local();
+    //    console.log(localDate.format(dateFormat));
+    //    return localDate.format(dateFormat);
+    //}
+    function toValidDate(datestring) {
+        var dateFormat = 'DD-MMM-YYYY, h:mm:ss a';
+        var testDateUtc = moment.utc(datestring);
+        var localDate = testDateUtc.local();
+        console.log(localDate.format(dateFormat));
+        return localDate.format(dateFormat);
+    }
+</script>

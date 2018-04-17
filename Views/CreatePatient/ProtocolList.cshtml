@@ -1,0 +1,493 @@
+﻿@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Http
+@{
+
+}
+@model IEnumerable<OneDirect.ViewModels.NewProtocol>
+@section styles{
+    <style type="text/css">
+        .btn-group-xs > .btn, .btn-xs {
+            padding: 1px 1px;
+            font-size: 12px;
+            line-height: 1.2;
+            border-radius: 3px;
+            margin-top: 1px;
+        }
+    </style>
+}
+<section class="content-header">
+    <h1>
+        @if (ViewBag.PatientName != null)
+        {
+            @ViewBag.PatientName
+        }
+        <small>Exercises</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Exercises</li>
+    </ol>
+</section>
+
+<!-- Main content -->
+
+
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    @*<h3 class="box-title">
+                            Protocols
+                        </h3>*@
+                </div>
+
+                <div class="box-body">
+                    <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                @if (ViewBag.etype == "Shoulder")
+                                {
+                                    <div class="nav-tabs-custom" style="margin-bottom:0px !important;">
+                                        <ul class="nav nav-tabs">
+                                            <li class="active">
+                                                <a href="active #@(ViewBag.etype==" "?" tab_1":"tab_1")" data-toggle="tab">Straight Arm Forward Flexion</a>
+                                            </li>
+                                            <li>
+                                                <a href="#@(ViewBag.etype==" "?" tab_2":"tab_2")" data-toggle="tab">External Rotation</a>
+                                            </li>
+                                            @*<li>
+                                                    <a href="#@(ViewBag.etype==" "?" tab_3":"tab_3")" data-toggle="tab">Abduction</a>
+                                                </li>*@
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div class="tab-pane active" id="tab_1">
+                                                <div class="box-body no-padding">
+                                                    <div class="content col-sm-12 no-padding">
+                                                        <div align="right">
+                                                            @if (Model != null && Model.Count() > 0 && Model.Where(x => x.ExcerciseEnum == "Forward Flexion").ToList().Count > 0)
+                                                            {
+                                                                @foreach (var item in Model.Where(x => x.ExcerciseEnum == "Forward Flexion").ToList())
+                                                                {
+                                                                    @if (item.ExcerciseEnum == "Forward Flexion")
+                                                                    {
+                                                                        if (ViewBag.VisibleAddButton == true)
+                                                                        {
+                                                                            @Html.ActionLink("Add", "Protocol", new { RXID = item.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                            <span style="color:red">Patient is not configured</span>
+                                                                        }
+                                                                        break;
+                                                                    }
+
+                                                                }
+                                                            }
+                                                            else if (ViewBag.VisibleAddButton == true)
+                                                            {
+                                                                @Html.ActionLink("Add", "Protocol", new { RXID = ViewBag.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+
+                                                            }
+                                                            else
+                                                            {
+
+                                                                <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                <span style="color:red">Patient is not configured</span>
+                                                            }
+                                                        </div>
+                                                        <table id="example1" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                                            <thead>
+                                                                <tr role="row">
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Protocol Name: activate to sort column descending" style="width: 182px;">Exercise Name</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient: activate to sort column descending" style="width: 182px;">Exercise Type</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Therapist: activate to sort column descending" style="width: 182px;">Flexion Current</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Flexion Goal</th>
+                                                                    @*<th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Hold Time</th>*@
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Rest Time</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Start Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">End Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Duration</th>
+                                                                    <th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions: activate to sort column descending" style="width: 182px;"></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (Model != null)
+                                                                {
+                                                                    @foreach (var item in Model.Where(x => x.ExcerciseEnum == "Forward Flexion").ToList())
+                                                                    {
+                                                                        @if (item.ExcerciseEnum == "Forward Flexion")
+                                                                        {
+                                                                            <tr>
+                                                                                @*
+                                                                                    <td><a href="@Url.Action(" Profile", "ProtocolView" , new { id=item.ProtocolId })">@item.ProtocolName</a></td>*@
+                                                                                <td>@item.ProtocolName</td>
+                                                                                <td>@item.ExcerciseName</td>
+                                                                                <td>@item.FlexUpLimit</td>
+                                                                                <td>@item.StretchUpLimit</td>
+                                                                                @*<td>@item.FlexUpHoldtime&nbsp;sec(s)</td>*@
+                                                                                <td>@item.RestTime&nbsp;sec(s)</td>
+                                                                                <td>@(item.StartDate != null ? Convert.ToDateTime(item.StartDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                <td>@(item.EndDate != null ? Convert.ToDateTime(item.EndDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                <td>@item.Time&nbsp;minute(s)</td>
+                                                                                <td>
+                                                                                    @Html.ActionLink("Edit", "Protocol", "CreatePatient", new { protocolid = item.ProtocolId, protocolName = item.ProtocolName, ExeName = item.ExcerciseName }, new { @class = "btn btn-primary btn-xs" })
+                                                                                    @Html.ActionLink("Delete", "Delete", "CreatePatient", new { proId = item.ProtocolId, patId = item.PatientId, patName = @ViewBag.PatientName, eType = item.EquipmentType }, new { @class = "btn btn-primary btn-xs", onclick = "return confirm('" + (item.SessionCount > 0 ? "Patient already has sessions associated with this protocol. Deleting the protocol will also delete the Sessions" : "Are you sure you wish to delete protocol " + item.ProtocolName + "?") + "');" })
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <tr>
+                                                                        <td colspan="10">No records Found!</td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="tab_2">
+                                                <div class="box-body  no-padding">
+                                                    <div class="content col-sm-12 no-padding" style="width: 100% !important;height: auto !important;">
+                                                        <div align="right">
+                                                            @if (Model != null && Model.Count() > 0 && Model.Where(x => x.ExcerciseEnum == "External Rotation").ToList().Count > 0)
+                                                            {
+                                                                @foreach (var item in Model.Where(x => x.ExcerciseEnum == "External Rotation").ToList())
+                                                                {
+                                                                    @if (item.ExcerciseEnum == "External Rotation")
+                                                                    {
+
+                                                                        if (ViewBag.VisibleAddButtonExt == true)
+                                                                        {
+                                                                            @Html.ActionLink("Add", "Protocol", new { RXID = item.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                            <span style="color:red">Patient is not configured</span>
+                                                                        }
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else if (ViewBag.VisibleAddButtonExt == true)
+                                                            {
+                                                                @Html.ActionLink("Add", "Protocol", new { RXID = ViewBag.RxIdExt }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+
+                                                            }
+                                                            else
+                                                            {
+
+                                                                <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                <span style="color:red">Patient is not configured</span>
+                                                            }
+                                                        </div>
+                                                        <table id="example2" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                                            <thead>
+                                                                <tr role="row">
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Protocol Name: activate to sort column descending" style="width: 182px;">Exercise Name</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient: activate to sort column descending" style="width: 182px;">Exercise Type</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Therapist: activate to sort column descending" style="width: 182px;">Flexion Current</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Flexion Goal</th>
+                                                                    @*<th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Hold Time</th>*@
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Rest Time</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Start Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">End Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Duration</th>
+                                                                    <th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions: activate to sort column descending" style="width: 182px;"></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (Model != null)
+                                                                {
+                                                                    @foreach (var item in Model.Where(x => x.ExcerciseEnum == "External Rotation").ToList())
+                                                                    {
+                                                                        @if (item.ExcerciseEnum == "External Rotation")
+                                                                        {
+                                                                            <tr>
+                                                                                @*
+                                                                                    <td><a href="@Url.Action(" Profile", "ProtocolView" , new { id=item.ProtocolId })">@item.ProtocolName</a></td>*@
+                                                                                <td>@item.ProtocolName</td>
+                                                                                <td>@item.ExcerciseName</td>
+                                                                                <td>@item.FlexUpLimit</td>
+                                                                                <td>@item.StretchUpLimit</td>
+                                                                                @*<td>@item.FlexUpHoldtime&nbsp;sec(s)</td>*@
+                                                                                <td>@item.RestTime&nbsp;sec(s)</td>
+                                                                                <td>@(item.StartDate != null ? Convert.ToDateTime(item.StartDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                <td>@(item.EndDate != null ? Convert.ToDateTime(item.EndDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                <td>@item.Time&nbsp;minute(s)</td>
+                                                                                <td>
+                                                                                    @Html.ActionLink("Edit", "Protocol", "CreatePatient", new { protocolid = item.ProtocolId, protocolName = item.ProtocolName, ExeName = item.ExcerciseName }, new { @class = "btn btn-primary btn-xs" })
+                                                                                    @Html.ActionLink("Delete", "Delete", "CreatePatient", new { proId = item.ProtocolId, patId = item.PatientId, patName = @ViewBag.PatientName, eType = item.EquipmentType }, new { @class = "btn btn-primary btn-xs", onclick = "return confirm('" + (item.SessionCount > 0 ? "Patient already has sessions associated with this protocol. Deleting the protocol will also delete the Sessions" : "Are you sure you wish to delete protocol " + item.ProtocolName + "?") + "');" })
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <tr>
+                                                                        <td colspan="10">No records Found!</td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @*<div class="tab-pane" id="tab_3">
+                                                    <div class="box-body  no-padding">
+                                                        <div class="content col-sm-12 no-padding" style="width: 100% !important;height: auto !important;">
+                                                            <div align="right">
+                                                                @if (ViewBag.ProtocolList != null)
+                                                                {
+                                                                    @foreach (var item in ViewBag.ProtocolList)
+                                                                    {
+                                                                        @if (item.ExcerciseName == "Abduction")
+                                                                        {
+                                                                            if (ViewBag.VisibleAddButton == true)
+                                                                            {
+                                                                                @Html.ActionLink("Add", "Protocol", new { RXID = item.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                                <span style="color:red">Patient is not configured</span>
+                                                                            }
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </div>
+                                                            <table id="example3" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                                                <thead>
+                                                                    <tr role="row">
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Exercise Name: activate to sort column descending" style="width: 182px;">Exercise Name</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient: activate to sort column descending" style="width: 182px;">Exercise Type</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Therapist: activate to sort column descending" style="width: 182px;">Flexion Current</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Flexion Goal</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Hold Time</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Rest Time</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Start Date</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">End Date</th>
+                                                                        <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 182px;">Duration</th>
+                                                                        <th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions: activate to sort column descending" style="width: 182px;"></th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @if (ViewBag.ProtocolList != null)
+                                                                    {
+                                                                        @foreach (var item in ViewBag.ProtocolList)
+                                                                        {
+                                                                            @if (item.ExcerciseName == "Abduction")
+                                                                            {
+                                                                                <tr>
+
+                                                                                    <td><a href="@Url.Action(" Profile", "ProtocolView" , new { id=item.ProtocolId })">@item.ProtocolName</a></td>
+                                                                                    <td>@item.ProtocolName</td>
+                                                                                    <td>@item.ExcerciseName</td>
+                                                                                    <td>@item.FlexUpLimit</td>
+                                                                                    <td>@item.StretchUpLimit</td>
+                                                                                    <td>@item.FlexUpHoldtime&nbsp;sec(s)</td>
+                                                                                    <td>@item.RestTime&nbsp;sec(s)</td>
+                                                                                    <td>@(item.StartDate != null ? item.StartDate.ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                    <td>@(item.EndDate != null ? item.EndDate.ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                                    <td>@item.Time&nbsp;minute(s)</td>
+                                                                                    <td>
+                                                                                        @Html.ActionLink("Edit", "Protocol", "CreatePatient", new { protocolid = item.ProtocolId, protocolName = item.ProtocolName, ExeName = item.ExcerciseName }, new { @class = "btn btn-primary btn-xs" })
+                                                                                        @Html.ActionLink("Delete", "Delete", "CreatePatient", new { proId = item.ProtocolId, patId = item.PatientId, patName = @ViewBag.PatientName, eType = item.EquipmentType }, new { @class = "btn btn-primary btn-xs", onclick = "return confirm('" + (item.SessionCount > 0 ? "Patient already has sessions associated with this protocol. Deleting the protocol will also delete the Sessions" : "Are you sure you wish to delete protocol " + item.ProtocolName + "?") + "');" })
+                                                                                    </td>
+                                                                                </tr>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <tr>
+                                                                            <td colspan="10">No records Found!</td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>*@
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="nav-tabs-custom" style="margin-bottom:0px !important;">
+                                        <ul class="nav nav-tabs">
+                                            <li class="active">
+                                                <a href="active" data-toggle="tab">Flexion-Extension</a>
+                                            </li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div class="">
+                                                <div class="box-body  no-padding">
+                                                    <div class="content col-sm-12 no-padding" style="width: 100% !important;height: auto !important;">
+
+                                                        <div align="right">
+                                                            @*@Html.ActionLink("Add", "Protocol", new { RXID = ViewBag.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })*@
+                                                            @if (ViewBag.VisibleAddButton == true)
+                                                            {
+                                                                @Html.ActionLink("Add", "Protocol", new { RXID = ViewBag.RxId }, new { @class = "btn btn-warning btn-sm", @style = "margin-top:10px;margin-bottom:10px;" })
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="button" class="btn btn-default btn-sm" style="margin-top:10px;margin-bottom:10px;" value="Add" />
+                                                                <span style="color:red">Patient is not configured</span>
+                                                            }
+                                                        </div>
+                                                        <table id="example1" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                                            <thead>
+                                                                <tr role="row">
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Exercise Name: activate to sort column descending" style="width: 160px;">Exercise Name</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient: activate to sort column descending" style="width: 160px;">Exercise Type</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Therapist: activate to sort column descending" style="width: 160px;">Flexion Current</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 160px;">Flexion Goal</th>
+                                                                    @*<th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending">Hold Time</th>*@
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Therapist: activate to sort column descending" style="width: 160px;">Extension Current</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 160px;">Extension Goal</th>
+                                                                    @*<th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending">Extension Hold</th>*@
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending">Rest Time</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 160px;">Start Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending" style="width: 160px;">End Date</th>
+                                                                    <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Max Pain: activate to sort column descending">Duration</th>
+                                                                    <th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions: activate to sort column descending"></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (Model != null)
+                                                                {
+                                                                    @foreach (var item in Model)
+                                                                    {
+                                                                        <tr>
+                                                                            @*
+                                                                                <td><a href="@Url.Action(" Profile", "ProtocolView" , new { id=item.ProtocolId })">@item.ProtocolName</a></td>*@
+                                                                            <td>@item.ProtocolName</td>
+                                                                            <td>@item.ExcerciseName</td>
+                                                                            @if (item.ExcerciseName == "Flexion" || item.ExcerciseName == "Flexion-Extension")
+                                                                            {
+                                                                                <td>@item.FlexUpLimit</td>
+                                                                                <td>@item.StretchUpLimit</td>
+                                                                                @*<td><div style="width:53px; word-break: break-word;">@item.FlexUpHoldtime sec(s)</div></td>*@
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <td>-</td>
+                                                                                <td>-</td>
+                                                                                @*<td>-</td>*@
+                                                                            }
+                                                                            @if (item.ExcerciseName == "Extension" || item.ExcerciseName == "Flexion-Extension")
+                                                                            {
+                                                                                <td>@item.FlexDownLimit</td>
+                                                                                <td>@item.StretchDownLimit</td>
+                                                                                @*<td><div style="width:53px; word-break: break-word;">@item.FlexDownHoldtime sec(s)</div></td>*@
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <td>-</td>
+                                                                                <td>-</td>
+                                                                                @*<td>-</td>*@
+                                                                            }
+
+                                                                            <td><div style="width:53px; word-break: break-word;">@item.RestTime sec(s)</div></td>
+                                                                            <td>@(item.StartDate != null ? Convert.ToDateTime(item.StartDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                            <td>@(item.EndDate != null ? Convert.ToDateTime(item.EndDate).ToString(string.Format("MMM-dd-yyyy")) : "")</td>
+                                                                            <td><div style="width:53px; word-break: break-word;">@item.Time min(s)</div></td>
+                                                                            <td>
+                                                                                @Html.ActionLink("Edit", "Protocol", "CreatePatient", new { protocolid = item.ProtocolId, protocolName = item.ProtocolName, ExeName = item.ExcerciseName }, new { @class = "btn btn-primary btn-xs" })
+                                                                                @Html.ActionLink("Delete", "Delete", "CreatePatient", new { proId = item.ProtocolId, patId = item.PatientId, patName = @ViewBag.PatientName, eType = item.EquipmentType }, new { @class = "btn btn-primary btn-xs", onclick = "return confirm('" + (item.SessionCount > 0 ? "Patient already has sessions associated with this protocol. Deleting the protocol will also delete the Sessions" : "Are you sure you wish to delete protocol " + item.ProtocolName + "?") + "');" })
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <tr>
+                                                                        <td colspan="13">No records Found!</td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="~/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#example1').DataTable({
+            "stateSave": true,
+            "stateDuration": -1,
+            'aoColumnDefs': [{
+                'bSortable': false,
+                'aTargets': [-1] /* 1st one, start by the right */
+            }]
+        });
+        $('#example2').DataTable({
+            "stateSave": true,
+            "stateDuration": -1,
+            'aoColumnDefs': [{
+                'bSortable': false,
+                'aTargets': [-1] /* 1st one, start by the right */
+            }]
+        });
+        $('#example3').DataTable({
+            "stateSave": true,
+            "stateDuration": -1,
+            'aoColumnDefs': [{
+                'bSortable': false,
+                'aTargets': [-1] /* 1st one, start by the right */
+            }]
+        });
+
+        @*$("a[name=delProtocol]").on("click", function (e) {
+            e.preventDefault();
+            var msg = ''
+            if (parseInt($(this).attr("data-sessioncount")) > 0)
+                msg = "Patient already has sessions associated with this protocol. Deleting the protocol will also delete the Sessions";
+            else
+                msg = "Are you sure you wish to delete protocol " + $(this).attr("data-protocolname") + "?";
+            if (confirm(msg)===true) {
+                var pid = $(this).attr("data-protocolid");
+                $.get({
+                    url: '@Url.Action("delete","createpatient")?protocolid=' + pid,
+                    success: function (data) {
+                        location.reload();
+                    },
+                    error: function (error) {
+
+
+                    }
+                })
+                return false;
+            }
+            else {
+                return false;
+
+            }
+        });*@
+    });
+
+</script>

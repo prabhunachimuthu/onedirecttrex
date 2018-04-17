@@ -1,0 +1,109 @@
+﻿@using OneDirect.ViewModels
+@{
+
+}
+@model OneDirect.ViewModels.TransactionLogView
+<section class="content-header">
+    <h1>
+        Transaction Logs
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Transacton Logs</li>
+    </ol>
+</section>
+
+
+@using (Html.BeginForm())
+{
+    <div class="col-md-12" style="padding-top:20px">
+        <!-- Horizontal Form -->
+        <div class="box box-info">
+
+            <div class="box-body" style="font-size:small">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Transaction Type</label>
+                        <div>
+                            @Html.DropDownListFor(model => model.TransactionType, ViewBag.Types as IEnumerable<SelectListItem>, "Select", new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.TransactionType, "", new { @class = "error" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Patients</label>
+                        <div>
+                            @Html.DropDownListFor(model => model.PatientUserId, ViewBag.Patients as IEnumerable<SelectListItem>, "Select", new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.PatientUserId, "", new { @class = "error" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Duration(Mins)</label>
+                        <div>
+                            @Html.TextBoxFor(model => model.Duration, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Duration, "", new { @class = "error" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="control-label">Comment</label>
+                        <div>
+                            @Html.TextAreaFor(model => model.Comment, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Comment, "", new { @class = "error" })
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <button type="submit" class="btn btn-success pull-right" style="margin-left:10px;">Submit</button>
+                <a href="/TransactionLog/Index" class="btn btn-warning pull-right">Cancel </a>
+
+
+            </div>
+            <!-- /.box-footer -->
+
+        </div>
+    </div>
+
+}
+
+@section Scripts {
+    <script type="text/javascript">
+        $('.datepicker').datepicker({ autoclose: true, format: 'dd-M-yyyy', todayHighlight: true, startDate: new Date() });
+
+        $(document).ready(function () {
+            $('.input-validation-error').on('focus', function () {
+                $(this).parents('.form-group').removeClass('has-error');
+                $(this).attr('class', 'form-control');
+                $(this).next('span.field-validation-error').attr('class', 'field-validation-valid').html('');
+            });
+            $("button[type=submit]").click(function (e) {
+                if ($('form').valid() == false) {
+                    $('.field-validation-error').addClass('text-danger');
+                }
+            });
+
+            $('#example1').DataTable({
+                "stateSave": true,
+                "stateDuration": -1,
+                'aoColumnDefs': [{
+                    'bSortable': false,
+                    'aTargets': [-1] /* 1st one, start by the right */
+                }]
+            });
+
+
+        });
+    </script>
+
+}
+
+
+
+

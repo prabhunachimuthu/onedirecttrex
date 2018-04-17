@@ -1,0 +1,122 @@
+﻿@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Http
+@using System;
+@using System.Globalization;
+@model IEnumerable<OneDirect.ViewModels.PatientMessageView>
+@{
+// Layout = null;
+}
+
+
+<section class="content-header" style="padding-bottom:20px">
+    <h1>
+        Patient Messages
+        @*<small>Control panel</small>*@
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Patient Messages</li>
+    </ol>
+</section>
+
+<!-- Main content -->
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                @*<div class="box-header">
+                        <h3 class="box-title">Patients</h3>
+                    </div>*@
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="example1" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 182px;">Name</th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Total Message : activate to sort column descending" style="width: 182px;">Total Message </th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Last Message : activate to sort column descending" style="width: 182px;">Last Message Date</th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Last Message : activate to sort column descending" style="width: 182px;">Unread Messages</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model != null)
+                                        {
+                                            @foreach (var item in Model)
+                                            {
+                                                <tr role="row">
+                                                    <td>
+
+                                                        @item.Patient.Name
+                                                    </td>
+
+                                                    <td>
+                                                        <a href="@Url.Action("Messages", "MessageView", new { patientId = item.Patient.UserId })" title="View Messages"><span class="">@(item.ReceiveMessage + item.SentMessage)</span></a>
+
+                                                    </td>
+                                                    <td>
+                                                        @if (item.LastMessageDate.HasValue)
+                                                        {
+                                                            <span class="formatdate">@item.LastMessageDate</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.TotalUnreadMessage > 0)
+                                                        {
+                                                            <a href="@Url.Action("Messages", "MessageView", new { patientId = item.Patient.UserId })" title="View Messages"><span class="label label-success">@item.TotalUnreadMessage</span></a>
+                                                        }
+                                                        else
+                                                        {
+                                                            @item.TotalUnreadMessage
+
+                                                        }
+                                                    </td>
+                                                </tr>
+
+                                            }
+                                        }
+
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script src="~/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#example1').DataTable({
+            // "stateSave": true,
+            //"stateDuration": -1,
+            //'aoColumnDefs': [{
+            //    'bSortable': false,
+            //    'aTargets': [-1] /* 1st one, start by the right */
+            //}]
+        });
+        $(".formatdate").each(function () {
+
+            $(this).text(toValidDate($(this).text()));
+        })
+    });
+    function toValidDate(datestring) {
+        var dateFormat = 'DD-MMM-YYYY, h:mm:ss a';
+        var testDateUtc = moment.utc(datestring);
+        var localDate = testDateUtc.local();
+        console.log(localDate.format(dateFormat));
+        return localDate.format(dateFormat);
+    }
+</script>

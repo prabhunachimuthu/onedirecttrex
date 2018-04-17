@@ -1,0 +1,151 @@
+﻿@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Http
+@using OneDirect.Helper
+@{
+
+}
+@model IEnumerable<OneDirect.ViewModels.TransactionLogView>
+<section class="content-header">
+
+    @*@if (ViewBag.TherapistName != null)
+        {
+            <h1>
+                @if (Context.Session.GetString("UserType") == ConstantsVar.Support.ToString())
+                {
+                    <span>Appointments for Support</span>
+                }
+                else
+                {
+                    <span>Appointments for Therapist (@ViewBag.TherapistName)</span>
+                }
+            </h1>
+        }
+        else
+        {
+            <h1>
+                <span>Appointments</span>
+            </h1>
+        }*@
+
+    <h1>
+        <span>Transaction Logs</span>
+    </h1>
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Transaction Logs</li>
+    </ol>
+</section>
+
+<!-- Main content -->
+
+
+<div class="col-md-2" style="padding-top:20px">
+    <table class="table table-bordered text-center">
+        <td>
+
+            @Html.ActionLink("Add", "Add", "TransactionLog", new { }, new { @class = "btn btn-block btn-warning btn-sm" })
+        </td>
+    </table>
+</div>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="example1" class="table table-bordered table-striped dataTable" style="font-size:small" role="grid" aria-describedby="example1_info">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient Name: activate to sort column descending" style="width: 182px;">Name</th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Phone: activate to sort column descending" style="width: 182px;">Transaction Type</th>
+                                            @*<th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Phone: activate to sort column descending" style="width: 182px;">Link to Activity</th>*@
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Phone: activate to sort column descending" style="width: 182px;">Duration(Mins)</th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Phone: activate to sort column descending" style="width: 182px;">Comment</th>
+                                            @*<th tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions : activate to sort column descending" style="width: 182px;"></th>*@
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model != null)
+                                        {
+                                            @foreach (var item in Model)
+                                            {
+                                                <tr>
+                                                    <td>
+
+                                                        @item.UserName
+
+                                                    </td>
+                                                    <td>
+                                                        @switch (item.TransactionType)
+                                                        {
+                                                            case 0:
+                                                                <span>Video call</span>
+                                                                break;
+                                                            case 1: <span>Progress Review</span>
+                                                                break;
+                                                            case 2: <span>Exercise Edit</span>
+                                                                break;
+                                                            default:  <span>Video call</span>
+                                                                break;
+                                                        }
+                                                    </td>
+                                                    @*<td>
+                                                        @switch (item.LinkToActivity)
+                                                        {
+                                                            case "0":
+                                                                <span>Appointment record</span>
+                                                                break;
+                                                            case "1": <span>Patient table</span>
+                                                                break;
+                                                            case "2": <span>Exercise table ID</span>
+                                                                break;
+                                                        }
+                                                    </td>*@
+                                                    <td>@item.Duration </td>
+                                                    <td>@item.Comment </td>
+                                                </tr>
+                                            }
+                                        }
+
+                                    <tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="~/plugins/jQuery/jquery-2.2.3.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="https://cdn.pubnub.com/pubnub-3.5.48.min.js"></script>
+<script type="text/javascript" src="https://api.vsee.com/vseepresence/1.0.0/vseepresence.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#example1').DataTable({
+            "stateSave": true,
+            "stateDuration": -1,
+            'aoColumnDefs': [{
+                'bSortable': false,
+                'aTargets': [-1] /* 1st one, start by the right */
+            }]
+        });
+        // Initialize the VSee environment
+        vseePresence = new VSeePresence();
+
+
+        $('.status-alert').vsee('presenceClasses');
+
+        $('.when-not-offline').vsee('showByPresence');
+
+        $('#startcall').on('click', function () {
+            $(window).unbind('beforeunload');
+        });
+    });
+
+</script>
