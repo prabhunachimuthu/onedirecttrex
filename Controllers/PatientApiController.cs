@@ -21,6 +21,7 @@ namespace OneDirect.Controllers
     [Route("api/[controller]")]
     public class PatientApiController : Controller
     {
+        private readonly IPatientRxInterface lIPatientRxRepository;
         private readonly IAppointmentInterface lIAppointmentRepository;
         private readonly IUserInterface lIUserRepository;
         private readonly IPatient IPatient;
@@ -34,6 +35,7 @@ namespace OneDirect.Controllers
             IPatient = new PatientRepository(context);
             lIUserRepository = new UserRepository(context);
             lIAppointmentRepository = new AppointmentRepository(context);
+            lIPatientRxRepository = new PatientRxRepository(context);
         }
 
         [HttpGet]
@@ -104,6 +106,70 @@ namespace OneDirect.Controllers
                 return Json(new { Status = (int)HttpStatusCode.InternalServerError, SessionId = "", result = "Internal server error", TimeZone = DateTime.UtcNow.ToString("s") });
             }
 
+        }
+
+        [HttpGet]
+        [Route("patientsummary")]
+        public JsonResult patientsummary(string sessionid, string rxid)
+        {
+            PatientSummary lsummary = new PatientSummary();
+            try
+            {
+
+                if (!string.IsNullOrEmpty(sessionid) && !string.IsNullOrEmpty(rxid))
+                {
+                    Patient lpatient = IPatient.GetPatientBySessionID(sessionid);
+                    if (lpatient != null)
+                    {
+                        PatientRx lPatientRx = lIPatientRxRepository.getPatientRxbyRxId(rxid, lpatient.PatientId.ToString());
+                        if (lPatientRx != null)
+                        {
+                            lsummary.RxStartDate = lPatientRx.RxStartDate.Value;
+                            lsummary.RxEndDate = lPatientRx.RxEndDate.Value;
+                            lsummary.RxDuration = Convert.ToInt32((lsummary.RxEndDate - lsummary.RxStartDate).TotalDays);
+                            lsummary.RemainingDays = Convert.ToInt32((lsummary.RxEndDate - DateTime.Now).TotalDays);
+                            double requiredSession = (((Convert.ToDateTime(lPatientRx.RxEndDate) - Convert.ToDateTime(lPatientRx.RxStartDate)).TotalDays / 7) * (int)lPatientRx.RxDaysPerweek * (int)lPatientRx.RxSessionsPerWeek);
+                            int totalSession = lPatientRx.Session != null ? lPatientRx.Session.ToList().Count : 0;
+                            lsummary.SessionSuggested = Convert.ToInt32(requiredSession);
+                            lsummary.SessionCompleted = totalSession;
+
+
+                            PatientRx lPatientRxPain = lIPatientRxRepository.getPatientRxPain(lPatientRx.RxId, lPatientRx.PatientId.ToString());
+
+                            if (lPatientRxPain != null)
+                            {
+                                List<Session> lSessionList = lPatientRx.Session != null ? lPatientRxPain.Session.ToList() : null;
+                                if (lSessionList != null && lSessionList.Count > 0)
+                                {
+                                    lsummary.MaxPainLevel = lSessionList.Select(x => x.Pain.Max(y => y.PainLevel)).Max().HasValue ? lSessionList.Select(x => x.Pain.Max(y => y.PainLevel)).Max().Value : 0;
+                                    lsummary.MaxFlexionAchieved = lSessionList.Max(x => x.MaxFlexion);
+                                    lsummary.MaxExtensionAchieved = lSessionList.Max(x => x.MaxExtension);
+                                    lsummary.TrexMinutes = lSessionList.Select(x => x.RangeDuration1).Sum().HasValue ? lSessionList.Select(x => x.RangeDuration1).Sum().Value : 0;
+                                    lsummary.FlexionExtensionMinutes = lSessionList.Select(x => x.RangeDuration2).Sum().HasValue ? lSessionList.Select(x => x.RangeDuration2).Sum().Value : 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "patientrx is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                        }
+                    }
+                    else
+                    {
+                        return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "patient is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                    }
+                }
+                else
+                {
+                    return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "session id not valid", TimeZone = DateTime.UtcNow.ToString("s") });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "Internal server error", TimeZone = DateTime.UtcNow.ToString("s") });
+            }
+            return Json(new { Status = (int)HttpStatusCode.OK, result = "success", Summary = lsummary, TimeZone = DateTime.UtcNow.ToString("s") });
         }
 
         [HttpPost]

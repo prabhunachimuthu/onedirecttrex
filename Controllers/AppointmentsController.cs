@@ -45,17 +45,32 @@ namespace OneDirect.Controllers
         // GET: /<controller>/
         public IActionResult Index(string id = "", string patId = "")
         {
-            string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
+            string timezoneid = TimeZoneInfo.Local.Id;// TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
             //string datetime = Utilities.ConverTimetoBrowserTimeZone(Convert.ToDateTime("2018-04-11 03:00:00"), "330");
 
             Console.Write("TREX Server TimeZone offset :" + timezoneid);
 
             Console.Write("TREX Browser TimeZone offset :" + HttpContext.Session.GetString("timezoneid"));
+
+            Console.Write("TREX Browser TimeZone :" + HttpContext.Session.GetString("timezone"));
             //var servertimezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalMinutes;
             //Console.Write("Server TimeZone Offset :" + servertimezone);
             if (!string.IsNullOrEmpty(patId))
             {
                 ViewBag.PatId = patId;
+                Patient lpat = IPatient.GetPatientByPatientID(Convert.ToInt32(patId));
+                if (lpat != null)
+                {
+                    ViewBag.UserName = lpat.PatientName;
+                }
+                else
+                {
+                    ViewBag.UserName = patId;
+                }
+            }
+            else
+            {
+                ViewBag.UserName = HttpContext.Session.GetString("UserName");
             }
             ViewBag.availability = null;
             ViewBag.appointment = null;
@@ -63,7 +78,14 @@ namespace OneDirect.Controllers
             if (!string.IsNullOrEmpty(id) && id == "Availability")
             {
                 List<availabilityView> AvailabilityList = new List<availabilityView>();
-                AvailabilityList = lIAppointmentScheduleRepository.GetAvailability(HttpContext.Session.GetString("UserId"), HttpContext.Session.GetString("timezoneid"));
+                if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                {
+                    AvailabilityList = lIAppointmentScheduleRepository.GetAvailabilityInMinutes(HttpContext.Session.GetString("UserId"), HttpContext.Session.GetString("timezoneid"));
+                }
+                else
+                {
+                    AvailabilityList = lIAppointmentScheduleRepository.GetAvailability(HttpContext.Session.GetString("UserId"), HttpContext.Session.GetString("timezoneid"));
+                }
                 ViewBag.availability = AvailabilityList;
                 ViewBag.Page = "Availability";
             }
@@ -92,11 +114,19 @@ namespace OneDirect.Controllers
                 }
                 else
                 {
+                    if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UserType")) && HttpContext.Session.GetString("UserType") == ConstantsVar.Admin.ToString())
+                    {
+                        ViewBag.Patients = lIAppointmentScheduleRepository.getAppointmentPatientList();
 
-                    ViewBag.Patients = lIAppointmentScheduleRepository.getAppointmentPatientListByUserId(HttpContext.Session.GetString("UserId"));
+                        ViewBag.History = lIAppointmentScheduleRepository.getAppointmentList(HttpContext.Session.GetString("timezoneid"));
+                    }
+                    else
+                    {
+                        ViewBag.Patients = lIAppointmentScheduleRepository.getAppointmentPatientListByUserId(HttpContext.Session.GetString("UserId"));
 
-                    ViewBag.History = lIAppointmentScheduleRepository.getAppointmentListByUserId(HttpContext.Session.GetString("UserId"), HttpContext.Session.GetString("timezoneid"));
+                        ViewBag.History = lIAppointmentScheduleRepository.getAppointmentListByUserId(HttpContext.Session.GetString("UserId"), HttpContext.Session.GetString("timezoneid"));
 
+                    }
 
 
                     ViewBag.SelectedPatient = "All";
@@ -105,7 +135,16 @@ namespace OneDirect.Controllers
             else
             {
                 List<appointmentView> AvailabilityList = new List<appointmentView>();
-                AvailabilityList = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendar(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
+                if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                {
+                    AvailabilityList = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendarInMinutes(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
+                }
+                else
+                {
+                    AvailabilityList = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendar(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
+                }
+
+
                 ViewBag.appointment = AvailabilityList;
 
                 //Console.Write("Avaialibility Prabhu :" + JsonConvert.SerializeObject(AvailabilityList));
@@ -135,13 +174,17 @@ namespace OneDirect.Controllers
             {
                 if (!string.IsNullOrEmpty(timezoneoffset))
                 {
-                    HttpContext.Session.SetString("timezone", timezoneoffset);
+                    HttpContext.Session.SetString("timezoneoffset", timezoneoffset);
 
                 }
                 if (!string.IsNullOrEmpty(timezoneid))
                 {
                     HttpContext.Session.SetString("timezoneid", timezoneid);
                 }
+                //if (!string.IsNullOrEmpty(timezoneid))
+                //{
+                //    HttpContext.Session.SetString("timezone", timezone);
+                //}
                 return Json(new { result = "success" });
             }
             catch (Exception ex)
@@ -220,9 +263,20 @@ namespace OneDirect.Controllers
         {
             try
             {
-                List<appointmentView> appointmentlist = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendar(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
-                if (appointmentlist != null && appointmentlist.Count > 0)
-                    return Json(new { result = "success", appointmentlist = appointmentlist });
+
+                if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                {
+                    List<appointmentView> appointmentlist = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendarInMinutes(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
+                    if (appointmentlist != null && appointmentlist.Count > 0)
+                        return Json(new { result = "success", appointmentlist = appointmentlist });
+                }
+                else
+                {
+                    List<appointmentView> appointmentlist = lIAppointmentScheduleRepository.GetAvailableSlotsForAppointmentCalendar(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), DateTime.Now.Date, DateTime.Now.Date.AddDays(60), HttpContext.Session.GetString("timezoneid"));
+                    if (appointmentlist != null && appointmentlist.Count > 0)
+                        return Json(new { result = "success", appointmentlist = appointmentlist });
+                }
+
             }
             catch (Exception ex)
             {
@@ -238,26 +292,60 @@ namespace OneDirect.Controllers
             {
                 //if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(minute) && !string.IsNullOrEmpty(timezoneoffset))
 
-                if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(timezoneoffset))
+                if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(timezoneoffset) && ((ConfigVars.NewInstance.slots.SlotDuration == "30" && !string.IsNullOrEmpty(minute)) || ConfigVars.NewInstance.slots.SlotDuration != "30"))
                 {
-                    string result = lIAppointmentScheduleRepository.GetAvailability(HttpContext.Session.GetString("UserId"), day, hour, timezoneoffset);
-                    if (string.IsNullOrEmpty(result))
+                    string result = "";
+                    if (ConfigVars.NewInstance.slots.SlotDuration == "30")
                     {
-                        string res = lIAppointmentScheduleRepository.InsertAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
-                        return Json(new { result = res });
+                        result = lIAppointmentScheduleRepository.GetAvailability(HttpContext.Session.GetString("UserId"), day, hour, minute, timezoneoffset);
                     }
                     else
                     {
-                        List<AppointmentSchedule> lappointments = lIAppointmentScheduleRepository.CheckAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
-                        if (lappointments == null || (lappointments != null && lappointments.Count == 0))
+                        result = lIAppointmentScheduleRepository.GetAvailability(HttpContext.Session.GetString("UserId"), day, hour, timezoneoffset);
+                    }
+                    if (string.IsNullOrEmpty(result))
+                    {
+                        if (ConfigVars.NewInstance.slots.SlotDuration == "30")
                         {
-                            string res = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                            string res = lIAppointmentScheduleRepository.InsertAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour, minute);
                             return Json(new { result = res });
                         }
                         else
                         {
-                            return Json(new { result = "failure", appointments = lappointments });
+                            string res = lIAppointmentScheduleRepository.InsertAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                            return Json(new { result = res });
                         }
+                    }
+                    else
+                    {
+                        if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                        {
+                            List<AppointmentSchedule> lappointments = lIAppointmentScheduleRepository.CheckAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour, minute);
+                            if (lappointments == null || (lappointments != null && lappointments.Count == 0))
+                            {
+                                string res = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour, minute);
+                                return Json(new { result = res });
+                            }
+                            else
+                            {
+                                return Json(new { result = "failure", appointments = lappointments });
+                            }
+                        }
+                        else
+                        {
+                            List<AppointmentSchedule> lappointments = lIAppointmentScheduleRepository.CheckAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                            if (lappointments == null || (lappointments != null && lappointments.Count == 0))
+                            {
+                                string res = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                                return Json(new { result = res });
+                            }
+                            else
+                            {
+                                return Json(new { result = "failure", appointments = lappointments });
+                            }
+                        }
+
+
                     }
                 }
             }
@@ -349,18 +437,34 @@ namespace OneDirect.Controllers
         {
             try
             {
-                //if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(minute) && !string.IsNullOrEmpty(timezoneoffset))
-                if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(timezoneoffset))
+                if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(timezoneoffset) && ((ConfigVars.NewInstance.slots.SlotDuration == "30" && !string.IsNullOrEmpty(minute)) || ConfigVars.NewInstance.slots.SlotDuration != "30"))
+                //if (!string.IsNullOrEmpty(day) && !string.IsNullOrEmpty(hour) && !string.IsNullOrEmpty(timezoneoffset))
                 {
-                    string res = lIAppointmentScheduleRepository.UpdateAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
-                    if (!string.IsNullOrEmpty(res))
+                    if (ConfigVars.NewInstance.slots.SlotDuration == "30")
                     {
-                        string result = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
-                        return Json(new { result = result });
+                        string res = lIAppointmentScheduleRepository.UpdateAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour, minute);
+                        if (!string.IsNullOrEmpty(res))
+                        {
+                            string result = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour, minute);
+                            return Json(new { result = result });
+                        }
+                        else
+                        {
+                            return Json(new { result = "" });
+                        }
                     }
                     else
                     {
-                        return Json(new { result = "" });
+                        string res = lIAppointmentScheduleRepository.UpdateAppointmentSchedule(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                        if (!string.IsNullOrEmpty(res))
+                        {
+                            string result = lIAppointmentScheduleRepository.RemoveAvailability(HttpContext.Session.GetString("UserId"), Utilities.getUserType(HttpContext.Session.GetString("UserType")), timezoneoffset, day, hour);
+                            return Json(new { result = result });
+                        }
+                        else
+                        {
+                            return Json(new { result = "" });
+                        }
                     }
 
                 }

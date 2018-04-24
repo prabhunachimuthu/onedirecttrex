@@ -18,90 +18,117 @@ namespace OneDirect.Repository
         {
             this.context = context;
         }
-        public Messages getMessage(string senderId, string receiverId)
-        {
-            return (from p in context.Messages
-                    where p.SenderId == senderId && p.ReceiverId == receiverId
-                    select p).FirstOrDefault();
-        }
-        public List<Messages> getMessagebyMessageId(string messageId)
-        {
-            return (from p in context.Messages
-                    join sender in context.User on p.SenderId equals sender.UserId
-                    join receiver in context.User on p.SenderId equals receiver.UserId
-                    where p.MessageId == messageId
-                    select new Messages
-                    {
-                        Id = p.Id,
-                        MessageId = p.MessageId,
-                        SenderId = p.SenderId,
-                        ReceiverId = p.ReceiverId,
-                        ReadStatus = p.ReadStatus,
-                        Subject = p.Subject,
-                        BodyText = p.BodyText,
-                        Attachment = p.Attachment,
-                        DateCreated = p.DateCreated,
-                        DateModified = p.DateModified,
-                        Receiver = receiver,
-                        Sender = sender,
-                    }).ToList();
-            //return (from p in context.Messages.Include(x => x.Sender).Include(x => x.Receiver)
-            //        where p.MessageId == messageId
-            //        select p).ToList();
 
-        }
-        public List<PatientMessageView> getPatientMessages(string id)
-        {
-            List<PatientMessageView> messages=(from p in context.Patient
-                    .Where(p => p.ProviderId == id)
-                    select new PatientMessageView
-                    {
-                        Patient = (from m in context.User where m.UserId == p.PatientLoginId select m).FirstOrDefault(),
-                        ReceiveMessage = (from m in context.Messages where m.SenderId == p.PatientId.ToString() && m.ReceiverId == id select m).Count(),
-                        SentMessage = (from m in context.Messages where m.SenderId == id && m.ReceiverId == p.PatientId.ToString() select m).Count(),
-                        TotalUnreadMessage = (from m in context.Messages where m.SenderId == p.PatientId.ToString() && m.ReceiverId == id && m.ReadStatus != 2 select m).Count(),
-                        LastMessageDate = (from m in context.Messages where m.SenderId == id || m.ReceiverId == id select m).OrderByDescending(m => m.DateCreated).FirstOrDefault().DateCreated
-                    }).ToList();
-
-            return messages;
-            //return null;
-        }
-        public List<PatientMessageView> getPatientMessagesforAdmin()
-        {
-            return (from p in context.User
-                    .Where(p => p.Type == 5)
-                    select new PatientMessageView
-                    {
-                        Patient = p,
-                        ReceiveMessage = (from m in context.Messages where m.SenderId == p.UserId && m.ReceiverId == ConfigVars.NewInstance.AdminUserName select m).Count(),
-                        SentMessage = (from m in context.Messages where m.SenderId == ConfigVars.NewInstance.AdminUserName && m.ReceiverId == p.UserId select m).Count(),
-                        TotalUnreadMessage = (from m in context.Messages where m.SenderId == p.UserId && m.ReceiverId == ConfigVars.NewInstance.AdminUserName && m.ReadStatus != 2 select m).Count(),
-                        LastMessageDate = (from m in context.Messages where m.SenderId == ConfigVars.NewInstance.AdminUserName || m.ReceiverId == ConfigVars.NewInstance.AdminUserName select m).OrderByDescending(m => m.DateCreated).FirstOrDefault().DateCreated
-                    }).ToList();
-        }
-        public List<Messages> getBySenderIdAndReceiverId(string senderId, string receiverId)
-        {
-            return (from p in context.Messages.Include(x => x.Sender).Include(x => x.Receiver)
-                    where (p.SenderId == senderId && p.ReceiverId == receiverId) || (p.SenderId == receiverId && p.ReceiverId == senderId)
-                    select p).OrderBy(p => p.DateCreated).ToList();
-        }
-
-        public void InsertMessage(Messages pMessage)
+        public int InsertMessage(Messages pMessage)
         {
             context.Messages.Add(pMessage);
-            context.SaveChanges();
+            return context.SaveChanges();
         }
 
-        public void UpdateMessage(Messages pMessage)
+        public int RemoveMessage(Messages pMessage)
         {
-            var _message = (from p in context.Messages
-                            where p.Id == pMessage.Id
-                            select p).FirstOrDefault();
-            if (_message != null)
-            {
-                context.Entry(_message).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                context.SaveChanges();
-            }
+            context.Messages.Remove(pMessage);
+            return context.SaveChanges();
+        }
+
+        public Messages getMessagesById(int id)
+        {
+
+            Messages lmsg = context.Messages.FirstOrDefault(x => x.MsgHeaderId == id);
+            return lmsg;
+
+
+        }
+        public List<MessageView> getMessagesbyTimeZone(string patientId, string timezoneid)
+        {
+            List<MessageView> mlist = (from p in context.Messages
+                                       where
+                                       p.PatientId == patientId
+                                       select new MessageView
+                                       {
+                                           MsgHeaderId = p.MsgHeaderId,
+                                           PatientId = p.PatientId,
+                                           SentReceivedFlag = p.SentReceivedFlag,
+                                           UserGroup = p.UserGroup,
+                                           UserType = p.UserType,
+                                           UserId = p.UserId,
+                                           UserName = p.UserName,
+                                           Datetime = Convert.ToDateTime(Utilities.ConverTimetoBrowserTimeZone(p.Datetime, timezoneid)),
+                                           ReadStatus = p.ReadStatus,
+                                           BodyText = p.BodyText
+                                       }).OrderBy(x => x.Datetime).ToList();
+            return mlist;
+
+
+        }
+
+
+        public List<MessageView> getMessages(string patientId)
+        {
+            List<MessageView> mlist = (from p in context.Messages
+                                       where
+                                       p.PatientId == patientId
+                                       select new MessageView
+                                       {
+                                           MsgHeaderId = p.MsgHeaderId,
+                                           PatientId = p.PatientId,
+                                           SentReceivedFlag = p.SentReceivedFlag,
+                                           UserGroup = p.UserGroup,
+                                           UserType = p.UserType,
+                                           UserId = p.UserId,
+                                           UserName = p.UserName,
+                                           Datetime = p.Datetime,
+                                           ReadStatus = p.ReadStatus,
+                                           BodyText = p.BodyText
+                                       }).OrderBy(x => x.Datetime).ToList();
+            return mlist;
+
+
+        }
+
+        public List<MessageView> getMessages(string patientId, string datetime)
+        {
+            List<MessageView> mlist = (from p in context.Messages
+                                       where
+                                       p.PatientId == patientId && p.Datetime > Convert.ToDateTime(datetime)
+                                       select new MessageView
+                                       {
+                                           MsgHeaderId = p.MsgHeaderId,
+                                           PatientId = p.PatientId,
+                                           SentReceivedFlag = p.SentReceivedFlag,
+                                           UserGroup = p.UserGroup,
+                                           UserType = p.UserType,
+                                           UserId = p.UserId,
+                                           UserName = p.UserName,
+                                           Datetime = p.Datetime,
+                                           ReadStatus = p.ReadStatus,
+                                           BodyText = p.BodyText
+                                       }).OrderBy(x => x.Datetime).ToList();
+            return mlist;
+
+
+        }
+        public List<MessageView> getMessages(string patientId, string datetime, int flag)
+        {
+            List<MessageView> mlist = (from p in context.Messages
+                                       where
+                                       p.PatientId == patientId && p.Datetime > Convert.ToDateTime(datetime) && p.SentReceivedFlag == flag
+                                       select new MessageView
+                                       {
+                                           MsgHeaderId = p.MsgHeaderId,
+                                           PatientId = p.PatientId,
+                                           SentReceivedFlag = p.SentReceivedFlag,
+                                           UserGroup = p.UserGroup,
+                                           UserType = p.UserType,
+                                           UserId = p.UserId,
+                                           UserName = p.UserName,
+                                           Datetime = p.Datetime,
+                                           ReadStatus = p.ReadStatus,
+                                           BodyText = p.BodyText
+                                       }).OrderBy(x => x.Datetime).ToList();
+            return mlist;
+
+
         }
 
         private bool disposed = false;

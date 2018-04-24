@@ -9,6 +9,8 @@ namespace OneDirect.Repository.Interface
 {
     interface IPatientRxInterface : IDisposable
     {
+        PatientRx getPatientRxPain(string rxid, string patid);
+        PatientRx getPatientRxbyRxId(string rxid, string patid);
         List<DashboardView> getDashboardForSupport();
         List<DashboardView> getDashboardForTherapist(string id);
         List<ExtensionViewModel> getPatientRxComplianceByExtension(int id, string equipmentType, string eenum);

@@ -38,12 +38,9 @@
 <!-- Main content -->
 <!-- Main content -->
 <section class="content">
-    <div class="row">
+    @*<div class="row">
         <div class="col-md-12">
             <div class="box box-primary direct-chat direct-chat-primary">
-                @*<div class="box-header with-border">
-                        <h3 class="box-title">Direct Chat</h3>
-                    </div>*@
                 <!-- /.box-header -->
                 <div class="box-body">
                     <!-- Conversations are loaded here -->
@@ -59,7 +56,6 @@
                                             <span class="direct-chat-name pull-left">@item.Sender.Name</span>
                                             <span class="direct-chat-timestamp pull-right" date-value="formatdate">@item.DateCreated</span>
                                         </div>
-                                        @*<img class="direct-chat-img" src="../dist/img/user1-128x128.jpg" alt="Message User Image">*@
                                         <div class="direct-chat-text">
                                             @item.BodyText
                                         </div>
@@ -72,8 +68,6 @@
                                             <span class="direct-chat-name pull-right">@item.Sender.Name</span>
                                             <span class="direct-chat-timestamp pull-left" date-value="formatdate">@item.DateCreated</span>
                                         </div>
-                                        <!-- /.direct-chat-info -->
-                                        @*<img class="direct-chat-img" src="../dist/img/user3-128x128.jpg" alt="Message User Image">*@
                                         <div class="direct-chat-text">
                                             @item.BodyText
                                         </div>
@@ -98,7 +92,7 @@
                 <!-- /.box-footer-->
             </div>
         </div>
-    </div>
+    </div>*@
 </section>
 
 <script src="~/plugins/jQuery/jquery-2.2.3.min.js"></script>

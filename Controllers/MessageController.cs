@@ -11,6 +11,8 @@ using System.Net;
 using OneDirect.Helper;
 using OneDirect.Response;
 using Newtonsoft.Json;
+using OneDirect.ViewModels;
+using OneDirect.Extensions;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,6 +21,8 @@ namespace OneDirect.Controllers
     [Route("api/[controller]")]
     public class MessageController : Controller
     {
+        private readonly IUserInterface lIUserRepository;
+        private readonly IPatient IPatient;
         private readonly IMessageInterface lIMessageRepository;
         private readonly IProtocolInterface lIProtocolRepository;
         private readonly IPainInterface lIPainRepository;
@@ -30,6 +34,8 @@ namespace OneDirect.Controllers
         {
             logger = plogger;
             this.context = context;
+            lIUserRepository = new UserRepository(context);
+            IPatient = new PatientRepository(context);
             lIMessageRepository = new MessageRepository(context);
             lIProtocolRepository = new ProtocolRepository(context);
             lIPainRepository = new PainRepository(context);
@@ -47,91 +53,40 @@ namespace OneDirect.Controllers
         [HttpGet("{id}")]
         public string Get(string id)
         {
-            string _result = string.Empty;
-            ProtocolList _protocolList = new ProtocolList();
-            _protocolList.Protocol = new List<Protocol>();
-            try
-            {
-                List<Protocol> lProtocollist = lIProtocolRepository.getMobileProtocol(id);
-                if (lProtocollist != null && lProtocollist.Count > 0)
-                {
-                    _protocolList.Protocol = lProtocollist;
-                    _protocolList.result = "success";
-                    _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
-                }
-                else
-                {
-                    _protocolList.result = "success";
-                    _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
-                }
-            }
-            catch (Exception ex)
-            {
-                _protocolList.result = "failed";
-                _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
-            }
-            return _result;
+            //string _result = string.Empty;
+            //ProtocolList _protocolList = new ProtocolList();
+            //_protocolList.Protocol = new List<Protocol>();
+            //try
+            //{
+            //    List<Protocol> lProtocollist = lIProtocolRepository.getMobileProtocol(id);
+            //    if (lProtocollist != null && lProtocollist.Count > 0)
+            //    {
+            //        _protocolList.Protocol = lProtocollist;
+            //        _protocolList.result = "success";
+            //        _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
+            //    }
+            //    else
+            //    {
+            //        _protocolList.result = "success";
+            //        _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _protocolList.result = "failed";
+            //    _result = Newtonsoft.Json.JsonConvert.SerializeObject(_protocolList);
+            //}
+            //return _result;
+            return "";
+
         }
 
         // POST api/values
         [HttpPost]
         public IActionResult Post([FromBody]Messages pMessage)
         {
-            ErrorResponse error = new ErrorResponse();
-            var response = new Dictionary<string, object>();
-            try
-            {
-                logger.LogDebug("Message Post Start");
 
-                if (pMessage != null)
-                {
-
-                    //Messages lMessage = lIMessageRepository.getMessage(pMessage.SenderId, pMessage.ReceiverId);
-                    if (pMessage.ReadStatus != 2)
-                    {
-                        pMessage.MessageId = Guid.NewGuid().ToString();
-                        pMessage.DateCreated = DateTime.UtcNow;
-                        pMessage.DateModified = DateTime.UtcNow;
-                        lIMessageRepository.InsertMessage(pMessage);
-                    }
-                    else
-                    {
-                        List<Messages> MessageList = lIMessageRepository.getBySenderIdAndReceiverId(pMessage.ReceiverId, pMessage.SenderId);
-                        MessageList = MessageList.Where(x => x.ReadStatus == 1).ToList();
-                        if (MessageList != null && MessageList.Count > 0)
-                        {
-                            foreach (Messages message in MessageList)
-                            {
-                                message.ReadStatus = 2;
-                                message.DateModified = DateTime.UtcNow;
-                                lIMessageRepository.UpdateMessage(message);
-                            }
-                        }
-                        pMessage.MessageId = Guid.NewGuid().ToString();
-                        pMessage.DateCreated = DateTime.UtcNow;
-                        pMessage.DateModified = DateTime.UtcNow;
-                        lIMessageRepository.InsertMessage(pMessage);
-                    }
-
-
-                    return Json(new { Status = (int)HttpStatusCode.OK });
-                }
-                else
-                {
-                    error.ErrorCode = HttpStatusCode.InternalServerError;
-                    error.ErrorMessage = "Not Inserted";
-                    response.Add("ErrorResponse", error);
-                    return Json(new { Status = (int)HttpStatusCode.InternalServerError, response });
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug("Get Rx Error: " + ex);
-                error.ErrorCode = HttpStatusCode.InternalServerError;
-                error.ErrorMessage = ex.ToString();
-                response.Add("ErrorResponse", error);
-                return Json(new { Status = (int)HttpStatusCode.InternalServerError, response });
-            }
+            return null;
 
         }
 
@@ -148,38 +103,148 @@ namespace OneDirect.Controllers
         }
 
 
+
         [HttpGet]
-        [Route("ViewMessages")]
-        public IActionResult ViewMessages(string id)
+        [Route("downloadmessages")]
+        public JsonResult downloadmessages(string sessionid, string datetime = "")
         {
-            ErrorResponse error = new ErrorResponse();
-            var response = new Dictionary<string, object>();
-            List<Messages> lMessageList = new List<Messages>();
+
             try
             {
-                if (!string.IsNullOrEmpty(id))
+                if (!string.IsNullOrEmpty(sessionid))
                 {
-                    lMessageList = lIMessageRepository.getMessagebyMessageId(id);
-                    string res = JsonConvert.SerializeObject(lMessageList);
-                    JsonResult result = Json(new { Status = (int)HttpStatusCode.OK, MessageList = lMessageList });
-                    return result;
+                    Patient lpatient = IPatient.GetPatientBySessionID(sessionid);
+                    if (lpatient != null)
+                    {
+                        MessageViewList lmessageList = new MessageViewList();
+                        if (string.IsNullOrEmpty(datetime))
+                        {
+                            lmessageList.messages = lIMessageRepository.getMessages(lpatient.PatientLoginId);
+                        }
+                        else
+                        {
+                            lmessageList.messages = lIMessageRepository.getMessages(lpatient.PatientLoginId, datetime);
+                        }
+
+                        string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
+                        lmessageList.timezoneOffset = timezoneid;
+                        return Json(new { Status = (int)HttpStatusCode.OK, result = "success", timezoneOffset = lmessageList.timezoneOffset, messages = lmessageList.messages });
+                    }
+                    else
+                    {
+                        return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "patient is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                    }
                 }
                 else
                 {
-                    error.ErrorCode = HttpStatusCode.InternalServerError;
-                    error.ErrorMessage = "Not found the message details";
-                    response.Add("ErrorResponse", error);
-                    return Json(new { Status = (int)HttpStatusCode.InternalServerError, response });
+                    return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "input is not valid", TimeZone = DateTime.UtcNow.ToString("s") });
                 }
             }
             catch (Exception ex)
             {
                 logger.LogDebug("Get Rx Error: " + ex);
-                error.ErrorCode = HttpStatusCode.InternalServerError;
-                error.ErrorMessage = ex.ToString();
-                response.Add("ErrorResponse", error);
-                return Json(new { Status = (int)HttpStatusCode.InternalServerError, response });
+
+                return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "getting messages failed" });
             }
         }
+        [HttpPost]
+        [Route("sendmessage")]
+        public JsonResult sendmessage([FromBody]sendmessage message, string sessionid)
+        {
+
+            try
+            {
+                if (!string.IsNullOrEmpty(sessionid) && message != null)
+                {
+                    Patient lpatient = IPatient.GetPatientBySessionID(sessionid);
+                    User luser = lIUserRepository.getUser(message.message.UserId);
+                    if (lpatient != null)
+                    {
+                        if (luser != null)
+                        {
+                            if (((message.message.UserType == ConstantsVar.Therapist && lpatient.Therapistid == message.message.UserId) || (message.message.UserType == ConstantsVar.Provider && lpatient.ProviderId == message.message.UserId) || message.message.UserType == ConstantsVar.Support))
+                            {
+                                DateTime mdatetime = Convert.ToDateTime(Utilities.ConverTimetoServerTimeZone(Convert.ToDateTime(message.message.Datetime), message.timezoneOffset));
+                                Messages lmessage = MessageExtension.MessageViewToMessage(message.message);
+                                lmessage.PatientId = lpatient.PatientLoginId;
+                                lmessage.Datetime = mdatetime;
+                                int res = lIMessageRepository.InsertMessage(lmessage);
+                                if (res > 0)
+                                    return Json(new { Status = (int)HttpStatusCode.OK, result = "success", MessageHeaderID = lmessage.MsgHeaderId });
+                                else
+                                    return Json(new { Status = (int)HttpStatusCode.OK, result = "not inserted" });
+
+                            }
+                            else
+                            {
+                                return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "patient and user is not mapping", TimeZone = DateTime.UtcNow.ToString("s") });
+                            }
+                        }
+                        else
+                        {
+                            return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "user is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                        }
+                    }
+                    else
+                    {
+                        return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "patient is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                    }
+                }
+                else
+                {
+                    return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "input is not valid", TimeZone = DateTime.UtcNow.ToString("s") });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug("Get Rx Error: " + ex);
+
+                return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "getting messages failed" });
+            }
+        }
+
+        [HttpGet]
+        [Route("deletemessage")]
+        public JsonResult deletemessage(string sessionid, string messageheaderid = "")
+        {
+
+            try
+            {
+                int id = 0;
+                if (!string.IsNullOrEmpty(sessionid) && !string.IsNullOrEmpty(messageheaderid) && int.TryParse(messageheaderid, out id))
+                {
+                    Patient lpatient = IPatient.GetPatientBySessionID(sessionid);
+                    if (lpatient != null && id > 0)
+                    {
+                        Messages lmsg = lIMessageRepository.getMessagesById(id);
+                        if (lmsg != null)
+                        {
+                            int res = lIMessageRepository.RemoveMessage(lmsg);
+                            if (res > 0)
+                            {
+                                return Json(new { Status = (int)HttpStatusCode.OK, result = "success", messageheaderid = lmsg.MsgHeaderId });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "patient is not configured", TimeZone = DateTime.UtcNow.ToString("s") });
+                    }
+                }
+                else
+                {
+                    return Json(new { Status = (int)HttpStatusCode.Forbidden, result = "input is not valid", TimeZone = DateTime.UtcNow.ToString("s") });
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug("Get Rx Error: " + ex);
+
+                return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "getting messages failed" });
+            }
+            return Json(new { Status = (int)HttpStatusCode.InternalServerError, result = "failure" });
+        }
+
     }
 }

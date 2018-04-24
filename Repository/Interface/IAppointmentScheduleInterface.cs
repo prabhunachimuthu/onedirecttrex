@@ -9,6 +9,7 @@ namespace OneDirect.Repository.Interface
 {
     interface IAppointmentScheduleInterface : IDisposable
     {
+        List<AppointmentScheduleListView> getAppointmentList(string timezone);
         List<appointmentView> GetAvailableSlotsForAppointmentCalendarInMinutes(string userId, string userType, DateTime startdate, DateTime enddate, string timezoneoffset);
         List<availabilityView> GetAvailabilityInMinutes(string userId, string browsertimezone);
         string UpdateAppointmentSchedule(string userId, string userType, string timezoneoffset, string day, string hour, string minute);

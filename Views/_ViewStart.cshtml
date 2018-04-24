@@ -5,15 +5,23 @@
 <script type="text/javascript">
     $(function () {
         function getTimeZone() {
-            //local
-            return /\((.*)\)/.exec(new Date().toString())[1];
-            ////Heroku
-            //var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
-            //var result = "GMT" + (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
-            //console.log(result);
-            //return result;
+           
+            ////local
+            //return /\((.*)\)/.exec(new Date().toString())[1];
+            //Heroku
+            return moment.tz.guess();
+            //var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            //if (timezone != undefined) {
+            //    return timezone;
+            //}
+            //else {
+            //    var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
+            //    var result = "GMT" + (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
+            //    console.log(result);
+            //    return result;
+            //}
         }
-        
+
 
         $.ajax({
             url: '@Url.Action("savetimezone","appointments")' + "?timezoneoffset=" + (0 - new Date().getTimezoneOffset()) + "&timezoneid=" + encodeURIComponent(getTimeZone()),

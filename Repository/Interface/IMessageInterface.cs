@@ -9,12 +9,12 @@ namespace OneDirect.Repository.Interface
 {
     interface IMessageInterface : IDisposable
     {
-        Messages getMessage(string senderId, string receiverId);
-        void InsertMessage(Messages pMessage);
-        void UpdateMessage(Messages pMessage);
-        List<Messages> getMessagebyMessageId(string messageId);
-        List<Messages> getBySenderIdAndReceiverId(string senderId, string receiverId);
-        List<PatientMessageView> getPatientMessages(string id);
-        List<PatientMessageView> getPatientMessagesforAdmin();
+        List<MessageView> getMessagesbyTimeZone(string patientId, string timezoneid);
+        int RemoveMessage(Messages pMessage);
+        Messages getMessagesById(int id);
+        int InsertMessage(Messages pMessage);
+        List<MessageView> getMessages(string patientId);
+        List<MessageView> getMessages(string patientId, string datetime);
+        List<MessageView> getMessages(string patientId, string datetime, int flag);
     }
 }

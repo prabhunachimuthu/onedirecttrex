@@ -133,6 +133,22 @@ namespace OneDirect.Repository
             return result;
         }
 
+        public List<Patient> GetPatientByProviderId(string providerid)
+        {
+            List<Patient> result = null;
+            try
+            {
+                result = (from p in context.Patient.Where(p => p.ProviderId == providerid)
+                          select p).ToList();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return result;
+        }
+
         public List<Patient> GetAllPatients()
         {
             List<Patient> result = null;

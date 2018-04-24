@@ -6,7 +6,14 @@
 @model OneDirect.ViewModels.UserViewModel
 <section class="content-header">
     <h1>
-        View / Edit Profile
+        @if (ViewBag.Name != null)
+        {
+            <span>@ViewBag.Name's Details </span>
+        }
+        else
+        {
+            <span>Therapists</span>
+        }
         @*<small>Control panel</small>*@
     </h1>
     <ol class="breadcrumb">

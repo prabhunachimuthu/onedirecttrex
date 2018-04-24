@@ -11,8 +11,8 @@ namespace OneDirect.Models
             AppointmentSchedule = new HashSet<AppointmentSchedule>();
             Availability = new HashSet<Availability>();
             EquipmentAssignment = new HashSet<EquipmentAssignment>();
-            MessagesReceiver = new HashSet<Messages>();
-            MessagesSender = new HashSet<Messages>();
+            MessagesPatient = new HashSet<Messages>();
+            MessagesUser = new HashSet<Messages>();
             PatientConfiguration = new HashSet<PatientConfiguration>();
             PatientRx = new HashSet<PatientRx>();
         }
@@ -32,8 +32,8 @@ namespace OneDirect.Models
         public virtual ICollection<AppointmentSchedule> AppointmentSchedule { get; set; }
         public virtual ICollection<Availability> Availability { get; set; }
         public virtual ICollection<EquipmentAssignment> EquipmentAssignment { get; set; }
-        public virtual ICollection<Messages> MessagesReceiver { get; set; }
-        public virtual ICollection<Messages> MessagesSender { get; set; }
+        public virtual ICollection<Messages> MessagesPatient { get; set; }
+        public virtual ICollection<Messages> MessagesUser { get; set; }
         public virtual ICollection<PatientConfiguration> PatientConfiguration { get; set; }
         public virtual ICollection<PatientRx> PatientRx { get; set; }
     }

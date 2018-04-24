@@ -97,8 +97,16 @@ namespace OneDirect.Controllers
             //    });
             //    ViewBag.Provider = new SelectList(ObjList, "Value", "Text");
             //}
-            UserViewModel _user = UserExtension.UserToUserViewModel(pUser);
-            return View(_user);
+            if (pUser != null)
+            {
+                UserViewModel _user = UserExtension.UserToUserViewModel(pUser);
+                ViewBag.Name = _user.Name;
+                return View(_user);
+            }
+            else
+            {
+                return View(null);
+            }
         }
         [HttpPost]
         public IActionResult Profile(UserViewModel pUser)

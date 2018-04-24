@@ -19,7 +19,7 @@
 }
 <section class="content-header" style="padding-bottom:20px">
     <h1>
-        Therapist Patients
+        @Context.Session.GetString("UserName")'s Patients
         @*<small>Control panel</small>*@
     </h1>
     <ol class="breadcrumb">
@@ -63,122 +63,125 @@
                                     <tbody>
                                         @foreach (var item in Model)
                                         {
-                                            <tr role="row">
-                                                <td>
-                                                    @if (item.TotalSession > 0)
-                                                    {
-                                                        <a href="@Url.Action("Patient", "Provider", new { id = item.PatientRx.PatientId, Username = item.PatientRx.Patient.PatientName, EquipmentType = item.PatientRx.EquipmentType, actuator = item.PatientRx.DeviceConfiguration })">@item.PatientRx.Patient.PatientName</a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>@item.PatientRx.Patient.PatientName</span>
-                                                    }
-                                                </td>
-                                                <td>@item.PatientRx.Patient.PatientLoginId</td>
-                                                <td>@item.PatientRx.Provider.Name</td>
-                                                <td>@(item.PatientRx.Patient.SurgeryDate != null ? Convert.ToDateTime(item.PatientRx.Patient.SurgeryDate).ToString("MMM-dd-yyyy") : "")</td>
-                                                <td>@item.PatientRx.EquipmentType</td>
-                                                <td>@(item.PatientRx.RxStartDate.HasValue ? Convert.ToDateTime(item.PatientRx.RxStartDate).ToString("MMM-dd-yyyy") : "")</td>
-                                                <td>@(item.PatientRx.RxEndDate.HasValue ? Convert.ToDateTime(item.PatientRx.RxEndDate).ToString("MMM-dd-yyyy") : "")</td>
-
-                                                <td>@(item.LastUse.HasValue ? Convert.ToDateTime(item.LastUse).ToString("MMM-dd-yyyy") : "-")</td>
-                                                <td>
-                                                    @if (item.MaxPain > 0)
-                                                    {
-                                                        @item.MaxPain
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>-</span>
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    @if (item.TotalSession > 0 && item.PatientRx.RxDaysPerweek > 0 && item.PatientRx.RxSessionsPerWeek > 0)
-                                                    {
-                                                        @(Math.Round((decimal)(item.TotalSession / ((((Convert.ToDateTime(item.PatientRx.RxEndDate) - Convert.ToDateTime(item.PatientRx.RxStartDate)).TotalDays) / 7) * item.PatientRx.RxDaysPerweek * item.PatientRx.RxSessionsPerWeek)) * 100))
-                                                        <span>%</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>-</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    @if (item.Progress != null)
-                                                    {
-                                                        if (item.PatientRx.EquipmentType.ToLower() == "shoulder")
-                                                        {
-                                                            <div class="progress-group">
-                                                                <span class="progress-text">Flexion </span>
-                                                                <span class="progress-number"><b>@item.Progress.Forward%</b></span>
-                                                                <div class="progress sm" style="display:@(item.Progress.Forward>0?"block":"block")">
-                                                                    <div class="progress-bar" style="width:@item.Progress.Forward%;@getcolor(item.Progress.Forward)"></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="progress-group">
-                                                                <span class="progress-text">Rotation</span>
-                                                                <span class="progress-number"><b>@item.Progress.Rotation%</b></span>
-                                                                <div class="progress sm" style="display:@(item.Progress.Rotation>0?"block":"block")">
-                                                                    <div class="progress-bar" style="width: @item.Progress.Rotation%;@getcolor(item.Progress.Rotation)"></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="progress-group">
-                                                                <span class="progress-text">Abduction</span>
-                                                                <span class="progress-number"><b>@item.Progress.Abduction%</b></span>
-                                                                <div class="progress sm" style="display:@(item.Progress.Abduction>0?"block":"block")">
-                                                                    <div class="progress-bar" style="width: @item.Progress.Abduction%;@getcolor(item.Progress.Abduction)"></div>
-                                                                </div>
-                                                            </div>
-                                                        }
-                                                        else
-                                                        {
-                                                            <div class="progress-group">
-                                                                <span class="progress-text">Flexion </span>
-                                                                <span class="progress-number"><b>@item.Progress.Flexexion%</b></span>
-                                                                <div class="progress sm" style="display:@(item.Progress.Flexexion>0?"block":"block")">
-                                                                    <div class="progress-bar" style="width: @item.Progress.Flexexion%;@getcolor(item.Progress.Flexexion)"></div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="progress-group">
-                                                                <span class="progress-text">Extension</span>
-                                                                <span class="progress-number"><b>@item.Progress.Extension%</b></span>
-                                                                <div class="progress sm" style="display:@(item.Progress.Extension>0?"block":"block")">
-                                                                    <div class="progress-bar" style="width: @item.Progress.Extension%;@getcolor(item.Progress.Extension)"></div>
-                                                                </div>
-                                                            </div>
-                                                        }
-                                                    }
-                                                </td>
-                                                <td style="white-space: nowrap;">
-                                                    <div>
-                                                        <div style="float:left;margin-right: 1px;">
-                                                            @Html.ActionLink("Exercises", "ProtocolList", "CreatePatient", new { patId = item.PatientRx.Patient.PatientId, Username = item.PatientRx.Patient.PatientName, eType = item.PatientRx.EquipmentType }, new { @class = "label label-primary" })
-                                                        </div>
+                                            if (item.PatientRx != null)
+                                            {
+                                                <tr role="row">
+                                                    <td>
                                                         @if (item.TotalSession > 0)
                                                         {
-                                                            <div>
-                                                                @Html.ActionLink("Sessions", "Index", "SessionView", new { id = item.PatientRx.PatientId, Username = item.PatientRx.Patient.PatientName, Etype = item.PatientRx.EquipmentType }, new { @class = "label label-primary" })
-                                                            </div>
+                                                            <a href="@Url.Action("Patient", "Provider", new { id = item.PatientRx.PatientId, Username = item.PatientRx.Patient.PatientName, EquipmentType = item.PatientRx.EquipmentType, actuator = item.PatientRx.DeviceConfiguration })">@item.PatientRx.Patient.PatientName</a>
                                                         }
                                                         else
                                                         {
-                                                            <span class="label  bg-gray-active ">Sessions</span>
+                                                            <span>@item.PatientRx.Patient.PatientName</span>
                                                         }
-                                                    </div>
-                                                    <div style="margin-top:5px;">
-                                                        @Html.ActionLink("Rx", "PatientRX", "CreatePatient", new { patid = item.PatientRx.PatientId, operaton = "edit" }, new { @class = "label label-primary" })
+                                                    </td>
+                                                    <td>@item.PatientRx.Patient.PatientLoginId</td>
+                                                    <td>@item.PatientRx.Provider.Name</td>
+                                                    <td>@(item.PatientRx.Patient.SurgeryDate != null ? Convert.ToDateTime(item.PatientRx.Patient.SurgeryDate).ToString("MMM-dd-yyyy") : "")</td>
+                                                    <td>@item.PatientRx.EquipmentType</td>
+                                                    <td>@(item.PatientRx.RxStartDate.HasValue ? Convert.ToDateTime(item.PatientRx.RxStartDate).ToString("MMM-dd-yyyy") : "")</td>
+                                                    <td>@(item.PatientRx.RxEndDate.HasValue ? Convert.ToDateTime(item.PatientRx.RxEndDate).ToString("MMM-dd-yyyy") : "")</td>
 
-                                                        @Html.ActionLink("Edit", "CreatePatient", "CreatePatient", new { patid = item.PatientRx.PatientId, operaton = "edit" }, new { @class = "label label-primary" })
+                                                    <td>@(item.LastUse.HasValue ? Convert.ToDateTime(item.LastUse).ToString("MMM-dd-yyyy") : "-")</td>
+                                                    <td>
+                                                        @if (item.MaxPain > 0)
+                                                        {
+                                                            @item.MaxPain
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>-</span>
+                                                        }
+                                                    </td>
 
-                                                        @Html.ActionLink("Delete", "Delete", "Provider", new { patid = item.PatientRx.PatientId }, new { @class = "label label-primary", onclick = "return confirm('Are you sure you wish to delete patient " + item.PatientRx.Patient.PatientName + "? ');" })
+                                                    <td>
+                                                        @if (item.TotalSession > 0 && item.PatientRx.RxDaysPerweek > 0 && item.PatientRx.RxSessionsPerWeek > 0)
+                                                        {
+                                                            @(Math.Round((decimal)(item.TotalSession / ((((Convert.ToDateTime(item.PatientRx.RxEndDate) - Convert.ToDateTime(item.PatientRx.RxStartDate)).TotalDays) / 7) * item.PatientRx.RxDaysPerweek * item.PatientRx.RxSessionsPerWeek)) * 100))
+                                                            <span>%</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>-</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.Progress != null)
+                                                        {
+                                                            if (item.PatientRx.EquipmentType.ToLower() == "shoulder")
+                                                            {
+                                                                <div class="progress-group">
+                                                                    <span class="progress-text">Flexion </span>
+                                                                    <span class="progress-number"><b>@item.Progress.Forward%</b></span>
+                                                                    <div class="progress sm" style="display:@(item.Progress.Forward > 0 ? "block" : "block")">
+                                                                        <div class="progress-bar" style="width:@item.Progress.Forward%;@getcolor(item.Progress.Forward)"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="progress-group">
+                                                                    <span class="progress-text">Rotation</span>
+                                                                    <span class="progress-number"><b>@item.Progress.Rotation%</b></span>
+                                                                    <div class="progress sm" style="display:@(item.Progress.Rotation > 0 ? "block" : "block")">
+                                                                        <div class="progress-bar" style="width: @item.Progress.Rotation%;@getcolor(item.Progress.Rotation)"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="progress-group">
+                                                                    <span class="progress-text">Abduction</span>
+                                                                    <span class="progress-number"><b>@item.Progress.Abduction%</b></span>
+                                                                    <div class="progress sm" style="display:@(item.Progress.Abduction > 0 ? "block" : "block")">
+                                                                        <div class="progress-bar" style="width: @item.Progress.Abduction%;@getcolor(item.Progress.Abduction)"></div>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="progress-group">
+                                                                    <span class="progress-text">Flexion </span>
+                                                                    <span class="progress-number"><b>@item.Progress.Flexexion%</b></span>
+                                                                    <div class="progress sm" style="display:@(item.Progress.Flexexion > 0 ? "block" : "block")">
+                                                                        <div class="progress-bar" style="width: @item.Progress.Flexexion%;@getcolor(item.Progress.Flexexion)"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="progress-group">
+                                                                    <span class="progress-text">Extension</span>
+                                                                    <span class="progress-number"><b>@item.Progress.Extension%</b></span>
+                                                                    <div class="progress sm" style="display:@(item.Progress.Extension > 0 ? "block" : "block")">
+                                                                        <div class="progress-bar" style="width: @item.Progress.Extension%;@getcolor(item.Progress.Extension)"></div>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td style="white-space: nowrap;">
+                                                        <div>
+                                                            <div style="float:left;margin-right: 1px;">
+                                                                @Html.ActionLink("Exercises", "ProtocolList", "CreatePatient", new { patId = item.PatientRx.Patient.PatientId, Username = item.PatientRx.Patient.PatientName, eType = item.PatientRx.EquipmentType }, new { @class = "label label-primary" })
+                                                            </div>
+                                                            @if (item.TotalSession > 0)
+                                                            {
+                                                                <div>
+                                                                    @Html.ActionLink("Sessions", "Index", "SessionView", new { id = item.PatientRx.PatientId, Username = item.PatientRx.Patient.PatientName, Etype = item.PatientRx.EquipmentType }, new { @class = "label label-primary" })
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="label  bg-gray-active ">Sessions</span>
+                                                            }
+                                                        </div>
+                                                        <div style="margin-top:5px;">
+                                                            @Html.ActionLink("Rx", "PatientRX", "CreatePatient", new { patid = item.PatientRx.PatientId, operaton = "edit" }, new { @class = "label label-primary" })
 
-                                                    </div>
-                                                    <div style="margin-top:6px;">
-                                                        @Html.ActionLink("Appointments", "Index", "Appointments", new { id = "History", patId = item.PatientRx.Patient.PatientId }, new { @class = "label label-primary" })
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                                            @Html.ActionLink("Edit", "CreatePatient", "CreatePatient", new { patid = item.PatientRx.PatientId, operaton = "edit" }, new { @class = "label label-primary" })
+
+                                                            @Html.ActionLink("Delete", "Delete", "Provider", new { patid = item.PatientRx.PatientId }, new { @class = "label label-primary", onclick = "return confirm('Are you sure you wish to delete patient " + item.PatientRx.Patient.PatientName + "? ');" })
+
+                                                        </div>
+                                                        <div style="margin-top:6px;">
+                                                            @Html.ActionLink("Appointments", "Index", "Appointments", new { id = "History", patId = item.PatientRx.Patient.PatientId }, new { @class = "label label-primary" })
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
                                         }
                                     </tbody>
                                 </table>

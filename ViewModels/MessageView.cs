@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace OneDirect.Models
+namespace OneDirect.ViewModels
 {
-    public partial class Messages
+    public class MessageView
     {
         public int MsgHeaderId { get; set; }
         public string PatientId { get; set; }
@@ -15,8 +17,17 @@ namespace OneDirect.Models
         public DateTime Datetime { get; set; }
         public int ReadStatus { get; set; }
         public string BodyText { get; set; }
+    }
 
-        public virtual User Patient { get; set; }
-        public virtual User User { get; set; }
+    public class MessageViewList
+    {
+        public List<MessageView> messages { get; set; }
+        public string timezoneOffset { get; set; }
+    }
+
+    public class sendmessage
+    {
+        public MessageView message { get; set; }
+        public string timezoneOffset { get; set; }
     }
 }

@@ -72,7 +72,7 @@
                                                     <td>@item.Address</td>
                                                     <td>
                                                         @Html.ActionLink("Edit", "Profile", new { id = item.UserId }, new { @class = "label label-primary" })
-                                                        @Html.ActionLink("Patients","Index", "Patient", new { provider = item.UserId ,ptype=item.Type, providername = item.Name }, new { @class = "label label-primary" })
+                                                        @Html.ActionLink("Patients","Index", "Patient", new { id = item.UserId ,type=item.Type, name = item.Name }, new { @class = "label label-primary" })
                                                     </td>
                                                 </tr>
                                             }

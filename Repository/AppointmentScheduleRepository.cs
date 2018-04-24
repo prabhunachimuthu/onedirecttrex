@@ -21,6 +21,42 @@ namespace OneDirect.Repository
             this.context = context;
         }
 
+        public List<AppointmentScheduleListView> getAppointmentList(string timezone)
+        {
+            try
+            {
+                List<AppointmentScheduleListView> list = (from p in context.AppointmentSchedule.Include(x => x.User)
+                                                          join _patient in context.Patient.Include(pro => pro.Protocol).ThenInclude(s => s.Session).Include(rx => rx.PatientRx) on p.PatientId equals _patient.PatientId
+                                                          join _provider in context.User on _patient.ProviderId equals _provider.UserId
+                                                          where p.Datetime < Convert.ToDateTime(Utilities.ConverTimetoBrowserTimeZone(DateTime.Now, timezone))
+                                                          select new AppointmentScheduleListView
+                                                          {
+                                                              AppointmentId = p.AppointmentId,
+                                                              AppointmentDate = Utilities.ConverTimetoBrowserTimeZone(p.Datetime, timezone),
+                                                              PatientId = p.PatientId.HasValue ? p.PatientId.Value.ToString() : "",
+                                                              UserType = p.UserType,
+                                                              UserId = p.UserId,
+                                                              UserName = p.User.Name,
+                                                              Urikey = p.VseeUrl,
+                                                              Status = p.CallStatus,
+                                                              CreateDate = p.CreateDate,
+                                                              UpdatedDate = p.UpdateDate,
+                                                              PatientName = _patient.PatientName,
+                                                              PatientVseeId = (from m in context.User where m.UserId == _patient.PatientLoginId select m).FirstOrDefault().Vseeid,
+                                                              Provider = _provider,
+                                                              TotalSession = _patient.Session.Count,
+                                                              PatientRx = _patient.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault()
+                                                          }).OrderByDescending(x => x.AppointmentDate).ToList();
+
+                return list;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
 
         public List<AppointmentScheduleListView> getAppointmentListByUserId(string luserId, string timezone)
         {
@@ -879,19 +915,35 @@ namespace OneDirect.Repository
                         {
                             User luser = (from p in context.User where p.UserId == avail.UserId select p).FirstOrDefault();
                             List<DateTime> dayofWeeks = alldates.Where(d => d.DayOfWeek == (DayOfWeek)Convert.ToInt32(avail.DayOfWeek)).ToList();
-                            List<string> hourofDay = avail.HourOfDay.Split(',').ToList();
+                            List<int> hourofDay = avail.HourOfDay.Split(',').Select(s => int.Parse(s)).ToList();
+                            if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                            {
+                                hourofDay = hourofDay.Where(x => x >= (Convert.ToInt32(ConfigVars.NewInstance.slots.Therapist_StartSlot) * 2) && x < (Convert.ToInt32(ConfigVars.NewInstance.slots.Therapist_EndSlot) * 2)).ToList();
+                            }
+                            else
+                            {
+                                hourofDay = hourofDay.Where(x => x >= Convert.ToInt32(ConfigVars.NewInstance.slots.Therapist_StartSlot) && x < Convert.ToInt32(ConfigVars.NewInstance.slots.Therapist_EndSlot)).ToList();
+                            }
                             //var offset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalMinutes;
                             //var localoffset = Utilities.convert(Convert.ToDouble(offset) / 60);
                             foreach (DateTime day in dayofWeeks)
                             {
-                                foreach (string hour in hourofDay)
+                                foreach (int hour in hourofDay)
                                 {
-                                    string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
-                                    ////Min Slot
-                                    //int min = convertSlotToMinutes(Convert.ToInt32(hour));
-                                    //string datetime = Utilities.ConverTimetoServerTimeZone(day.AddMinutes(min), timezoneid);
-                                    //Hour Slot
-                                    string datetime = Utilities.ConverTimetoServerTimeZone(day.AddHours(Convert.ToInt32(hour)), timezoneid);
+                                    string timezoneid = TimeZoneInfo.Local.Id;//"Eastern Daylight Time";// TimeZoneInfo.Local.Id;// TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
+                                    string datetime = "";
+                                    if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                                    {
+                                        //Min Slot
+                                        int min = convertSlotToMinutes(Convert.ToInt32(hour));
+                                        datetime = Utilities.ConverTimetoServerTimeZone(day.AddMinutes(min), timezoneid);
+                                    }
+                                    else
+                                    {
+                                        ////Hour Slot
+                                        datetime = Utilities.ConverTimetoServerTimeZone(day.AddHours(Convert.ToInt32(hour)), timezoneid);
+
+                                    }
                                     if (!string.IsNullOrEmpty(datetime))
                                     {
                                         AvailableSlot slot = new AvailableSlot();
@@ -900,6 +952,7 @@ namespace OneDirect.Repository
                                         slot.DateTime = datetime;
                                         result.Add(slot);
                                     }
+
                                 }
                             }
                         }
@@ -947,19 +1000,35 @@ namespace OneDirect.Repository
                         {
                             User luser = (from p in context.User where p.UserId == avail.UserId select p).FirstOrDefault();
                             List<DateTime> dayofWeeks = alldates.Where(d => d.DayOfWeek == (DayOfWeek)Convert.ToInt32(avail.DayOfWeek)).ToList();
-                            List<string> hourofDay = avail.HourOfDay.Split(',').ToList();
+                            //List<string> hourofDay = avail.HourOfDay.Split(',').ToList();
+                            List<int> hourofDay = avail.HourOfDay.Split(',').Select(s => int.Parse(s)).ToList();
+                            if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                            {
+                                hourofDay = hourofDay.Where(x => x >= (Convert.ToInt32(ConfigVars.NewInstance.slots.Support_StartSlot) * 2) && x < (Convert.ToInt32(ConfigVars.NewInstance.slots.Support_EndSlot) * 2)).ToList();
+                            }
+                            else
+                            {
+                                hourofDay = hourofDay.Where(x => x >= Convert.ToInt32(ConfigVars.NewInstance.slots.Support_StartSlot) && x < Convert.ToInt32(ConfigVars.NewInstance.slots.Support_EndSlot)).ToList();
+                            }
                             //var offset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalMinutes;
                             //var localoffset = Utilities.convert(Convert.ToDouble(offset) / 60);
                             foreach (DateTime day in dayofWeeks)
                             {
-                                foreach (string hour in hourofDay)
+                                foreach (int hour in hourofDay)
                                 {
-                                    string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
-                                    ////Min Slot
-                                    //int min = convertSlotToMinutes(Convert.ToInt32(hour));
-                                    //string datetime = Utilities.ConverTimetoServerTimeZone(day.AddMinutes(min), timezoneid);
-                                    //Hour Slot
-                                    string datetime = Utilities.ConverTimetoServerTimeZone(day.AddHours(Convert.ToInt32(hour)), timezoneid);
+                                    string timezoneid = TimeZoneInfo.Local.Id;//"Eastern Daylight Time";// TimeZoneInfo.Local.Id; //TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
+                                    string datetime = "";
+                                    if (ConfigVars.NewInstance.slots.SlotDuration == "30")
+                                    {
+                                        //Min Slot
+                                        int min = convertSlotToMinutes(Convert.ToInt32(hour));
+                                        datetime = Utilities.ConverTimetoServerTimeZone(day.AddMinutes(min), timezoneid);
+                                    }
+                                    else
+                                    {
+                                        ////Hour Slot
+                                        datetime = Utilities.ConverTimetoServerTimeZone(day.AddHours(Convert.ToInt32(hour)), timezoneid);
+                                    }
                                     if (!string.IsNullOrEmpty(datetime))
                                     {
                                         AvailableSlot slot = new AvailableSlot();
@@ -1004,7 +1073,6 @@ namespace OneDirect.Repository
             }
             return result;
         }
-
 
         public List<appointmentView> GetAvailableSlotsForAppointmentCalendar(string userId, string userType, DateTime startdate, DateTime enddate, string timezoneoffset)
         {

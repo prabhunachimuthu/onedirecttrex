@@ -53,7 +53,7 @@ namespace OneDirect.Controllers
                 }
                 else
                 {
-                    return Json(new { Status = (int)HttpStatusCode.InternalServerError, SessionId = "", result = "failed", TimeZone = DateTime.UtcNow.ToString("s") });
+                    return Json(new { Status = (int)HttpStatusCode.InternalServerError, SessionId = "", result = "invalid username password", TimeZone = DateTime.UtcNow.ToString("s") });
                 }
             }
             catch (Exception ex)

@@ -35,12 +35,15 @@ namespace OneDirect.Repository
             User luser = (from p in context.User
                           where p.UserId == lUserID && p.Password == password && p.Type == type
                           select p).FirstOrDefault();
-            luser.LoginSessionId = Guid.NewGuid().ToString();
-            context.Entry(luser).State = EntityState.Modified;
-            int result = context.SaveChanges();
-            if (result > 0)
+            if (luser != null)
             {
-                return luser;
+                luser.LoginSessionId = Guid.NewGuid().ToString();
+                context.Entry(luser).State = EntityState.Modified;
+                int result = context.SaveChanges();
+                if (result > 0)
+                {
+                    return luser;
+                }
             }
             return null;
         }

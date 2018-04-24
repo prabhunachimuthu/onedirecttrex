@@ -23,4 +23,18 @@ namespace OneDirect.ViewModels
         public int TotalSession { get; set; }
         public Progress Progress { get; set; }
     }
+    public class PatientSummary
+    {
+        public DateTime RxStartDate { get; set; }
+        public DateTime RxEndDate { get; set; }
+        public int RemainingDays { get; set; }
+        public int RxDuration { get; set; }
+        public int SessionCompleted { get; set; }
+        public int SessionSuggested { get; set; }
+        public int TrexMinutes { get; set; }
+        public int FlexionExtensionMinutes { get; set; }
+        public int MaxFlexionAchieved { get; set; }
+        public int MaxExtensionAchieved { get; set; }
+        public int MaxPainLevel { get; set; }
+    }
 }

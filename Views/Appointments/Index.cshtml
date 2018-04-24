@@ -32,7 +32,7 @@
 
 
     <h1>
-        <span>@Context.Session.GetString("UserName") Appointments</span>
+        <span>@((ViewBag.UserName != null && ViewBag.UserName.ToLower() != "admin") ? ViewBag.UserName + "'s Appointments" : "All Appointments")</span>
     </h1>
 
 
@@ -341,6 +341,7 @@
 
         var startslot=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject((Context.Session.GetString("UserType") =="1"? ConfigVars.NewInstance.slots.Support_StartTime : ConfigVars.NewInstance.slots.Therapist_StartTime)));
         var endslot=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject((Context.Session.GetString("UserType") =="1"? ConfigVars.NewInstance.slots.Support_EndTime : ConfigVars.NewInstance.slots.Therapist_EndTime)));
+        var slotduration=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ConfigVars.NewInstance.slots.SlotDuration));
         //$("body").css("height",document.body.clientHeight+"px");
         //$("wrapper").css("height",document.body.clientHeight+"px");
         //$(".content-wrapper").css("min-height",document.body.clientHeight+"px");
@@ -366,8 +367,13 @@
 
     });
     function getTimeZone() {
+        ////local
+        //return /\((.*)\)/.exec(new Date().toString())[1];
+        //Heroku
+        return moment.tz.guess();
+
         //Local
-        return /\((.*)\)/.exec(new Date().toString())[1];
+        //return /\((.*)\)/.exec(new Date().toString())[1];
         ////Heroku
         //var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
         //return "GMT" + (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
@@ -406,10 +412,21 @@
     }
     function deleteappointments()
     {
+        //One-Hour slot: url: '@Url.Action("delete","appointments")'+"?day="+ $("#hdday").val()+"&hour="+ $("#hdhour").val()+"&timezoneoffset="+encodeURIComponent(getTimeZone()),
         //Half-Hour slot : url: '@Url.Action("delete","appointments")'+"?day="+ $("#hdday").val()+"&hour="+ $("#hdhour").val()+"&minute="+ $("#hdminute").val()+"&timezoneoffset="+encodeURIComponent(getTimeZone()),
         showMask();
+        var urlvalue="";
+        if(slotduration =="30")
+        {
+            urlvalue='@Url.Action("delete","appointments")'+"?day="+ $("#hdday").val()+"&hour="+ $("#hdhour").val()+"&minute="+ $("#hdminute").val()+"&timezoneoffset="+encodeURIComponent(getTimeZone());
+        }
+        else
+        {
+            urlvalue= '@Url.Action("delete","appointments")'+"?day="+ $("#hdday").val()+"&hour="+ $("#hdhour").val()+"&timezoneoffset="+encodeURIComponent(getTimeZone());
+
+        }
         $.ajax({
-            url: '@Url.Action("delete","appointments")'+"?day="+ $("#hdday").val()+"&hour="+ $("#hdhour").val()+"&timezoneoffset="+encodeURIComponent(getTimeZone()),
+            url: urlvalue,
             //data: JSON.stringify(messages),
             type: 'post',
             dataType: 'json',
@@ -435,6 +452,7 @@
     $(function () {
         var startslot=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject((Context.Session.GetString("UserType") =="1"? ConfigVars.NewInstance.slots.Support_StartTime : ConfigVars.NewInstance.slots.Therapist_StartTime)));
         var endslot=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject((Context.Session.GetString("UserType") =="1"? ConfigVars.NewInstance.slots.Support_EndTime : ConfigVars.NewInstance.slots.Therapist_EndTime)));
+        var slotduration=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ConfigVars.NewInstance.slots.SlotDuration));
         var availability=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.availability));
         var appointment=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.appointment));
         /* initialize the external events
@@ -481,8 +499,9 @@
                 },
                 contentHeight: 'auto',
                 //scrollTime:"00:00:00",
-                //minTime: startslot,
-                //maxTime:endslot,
+                slotDuration: (slotduration=="30" ? '00:30:00' :'01:00:00'),
+                minTime: startslot,
+                maxTime:endslot,
                 //views: {
                 //    settimana: {
                 //        type: 'agendaWeek',
@@ -519,8 +538,20 @@
                     //alert('Clicked on: ' + new Date(date.format()).getDay());
                     //alert('Hours on: ' + new Date(date.format()).getHours());
                     //Half-Hour slot : url: '@Url.Action("insert","appointments")'+"?day="+calEvent.start.day()+"&hour="+calEvent.start.hour()+"&minute="+calEvent.start.minute()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
+                    //One-Hour slot: url: '@Url.Action("insert","appointments")'+"?day="+calEvent.start.day()+"&hour="+calEvent.start.hour()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
+
+                    var urlvalue="";
+                    if(slotduration =="30")
+                    {
+                        urlvalue='@Url.Action("insert","appointments")'+"?day="+calEvent.start.day()+"&hour="+calEvent.start.hour()+"&minute="+calEvent.start.minute()+"&timezoneoffset="+ encodeURIComponent(getTimeZone());
+                    }
+                    else
+                    {
+                        urlvalue= '@Url.Action("insert","appointments")'+"?day="+calEvent.start.day()+"&hour="+calEvent.start.hour()+"&timezoneoffset="+ encodeURIComponent(getTimeZone());
+
+                    }
                     $.ajax({
-                        url: '@Url.Action("insert","appointments")'+"?day="+calEvent.start.day()+"&hour="+calEvent.start.hour()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
+                        url: urlvalue,
                         //data: JSON.stringify(messages),
                         type: 'post',
                         dataType: 'json',
@@ -576,9 +607,21 @@
                     //alert('Clicked on: ' + moment(date).format("YYYY-MM-DD HH:mm:ss"));
                     //alert('Hour on: ' + new Date(date.format()).getHours());
                     //alert('Minutes on: ' + new Date(date.format()).getMinutes());
+                    //One-Hour slot :url: '@Url.Action("insert","appointments")'+"?day="+new Date(date.format()).getDay()+"&hour="+new Date(date.format()).getHours()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
                     //Half-Hour slot : url: '@Url.Action("insert","appointments")'+"?day="+new Date(date.format()).getDay()+"&hour="+new Date(date.format()).getHours()+"&minute="+new Date(date.format()).getMinutes()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
+
+                    var urlvalue="";
+                    if(slotduration =="30")
+                    {
+                        urlvalue='@Url.Action("insert","appointments")'+"?day="+new Date(date.format()).getDay()+"&hour="+new Date(date.format()).getHours()+"&minute="+new Date(date.format()).getMinutes()+"&timezoneoffset="+ encodeURIComponent(getTimeZone());
+                    }
+                    else
+                    {
+                        urlvalue= '@Url.Action("insert","appointments")'+"?day="+new Date(date.format()).getDay()+"&hour="+new Date(date.format()).getHours()+"&timezoneoffset="+ encodeURIComponent(getTimeZone());
+
+                    }
                     $.ajax({
-                        url: '@Url.Action("insert","appointments")'+"?day="+new Date(date.format()).getDay()+"&hour="+new Date(date.format()).getHours()+"&timezoneoffset="+ encodeURIComponent(getTimeZone()),
+                        url: urlvalue,
                         //data: JSON.stringify(messages),
                         type: 'post',
                         dataType: 'json',
@@ -700,8 +743,10 @@
                     center: 'title',
                     right: ''
                 },
-                //minTime:startslot,
-                //maxTime:endslot,
+                slotDuration: (slotduration=="30" ? '00:30:00' :'01:00:00'),
+                //axisFormat:'h(:mm)a',
+                minTime:startslot,
+                maxTime:endslot,
                 //height:400,
                 contentHeight: 'auto',
                 scrollTime: '10:00:00',

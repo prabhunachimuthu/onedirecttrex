@@ -280,35 +280,42 @@ namespace OneDirect.Helper
                     DateTime startTime = DateTime.Parse(Convertdate.ToString());
                     DateTime _now = DateTime.Parse(Convertdate.ToString());
 
-                    foreach (TimeZoneInfo timeZoneInfo in timeZones)
+                    try
                     {
-                        if (timeZoneInfo.SupportsDaylightSavingTime)
+                        //Heroku
+                        TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                        if (tst != null)
                         {
-                            if (timeZoneInfo.DaylightName == timeZoneId)
-                            {
-                                TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
-                                _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
-                                break;
-                            }
+                            _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
                         }
-                        else
-                        {
-                            if (timeZoneInfo.StandardName == timeZoneId)
-                            {
-                                TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
-                                _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
-                                break;
-                            }
-                        }
-
                     }
+                    catch (Exception ex)
+                    {
+                        //Local
+                        foreach (TimeZoneInfo timeZoneInfo in timeZones)
+                        {
+                            if (timeZoneInfo.SupportsDaylightSavingTime)
+                            {
+                                if (timeZoneInfo.DaylightName == timeZoneId)
+                                {
+                                    TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
+                                    _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (timeZoneInfo.StandardName == timeZoneId)
+                                {
+                                    TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
+                                    _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
+                                    break;
+                                }
+                            }
 
-
-                    //TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                    //if (tst != null)
-                    //{
-                    //    _now = TimeZoneInfo.ConvertTime(startTime, tst, TimeZoneInfo.Utc);
-                    //}
+                        }
+                    }
+                    
                     return _now.ToString();
                 }
                 else
@@ -334,33 +341,44 @@ namespace OneDirect.Helper
                     DateTime startTime = DateTime.Parse(Convertdate.ToString());
                     DateTime _now = DateTime.Parse(Convertdate.ToString());
 
-                    foreach (TimeZoneInfo timeZoneInfo in timeZones)
+                    //Heroku
+                    try
                     {
-                        if (timeZoneInfo.SupportsDaylightSavingTime)
+                        TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                        if (tst != null)
                         {
-                            if (timeZoneInfo.DaylightName == timeZoneId)
-                            {
-                                TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
-                                _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
-                                break;
-                            }
+                            _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
                         }
-                        else
+                    }
+                    catch (Exception ex)
+                    {
+
+                        //Local
+                        foreach (TimeZoneInfo timeZoneInfo in timeZones)
                         {
-                            if (timeZoneInfo.StandardName == timeZoneId)
+                            if (timeZoneInfo.SupportsDaylightSavingTime)
                             {
-                                TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
-                                _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
-                                break;
+                                if (timeZoneInfo.DaylightName == timeZoneId)
+                                {
+                                    TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
+                                    _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
+                                    break;
+                                }
                             }
+                            else
+                            {
+                                if (timeZoneInfo.StandardName == timeZoneId)
+                                {
+                                    TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneInfo.Id);
+                                    _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
+                                    break;
+                                }
+                            }
+
                         }
 
                     }
-                    //TimeZoneInfo tst = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                    //if (tst != null)
-                    //{
-                    //    _now = TimeZoneInfo.ConvertTime(startTime, TimeZoneInfo.Utc, tst);
-                    //}
+
                     return _now.ToString();
                 }
                 else
@@ -425,9 +443,11 @@ namespace OneDirect.Helper
             //return serverDateTime; //"Eastern Daylight Time";//
 
 
-            string localUtcTime = Utilities.GetUTCDateTime(date, timezone);
-            string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
-            string serverDateTime = Utilities.GetLocalDateTime(Convert.ToDateTime(localUtcTime), timezoneid);
+            string localUtcTime = Utilities.GetUTCDateTimebyTimeZoneId(date, timezone);
+            Console.Write("Prabhu Utc Date :" + localUtcTime);
+            string timezoneid = TimeZoneInfo.Local.Id;// "Eastern Daylight Time";// TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
+            string serverDateTime = Utilities.GetLocalDateTimebyTimeZoneId(Convert.ToDateTime(localUtcTime), timezoneid);
+            Console.Write("Prabhu Server Date :" + serverDateTime);
             return serverDateTime;
         }
 
@@ -446,10 +466,10 @@ namespace OneDirect.Helper
             //return browserDateTime;
             //"Eastern Daylight Time";// 
 
-            string timezoneid = TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;//"US Eastern Standard Time";//
+            string timezoneid = TimeZoneInfo.Local.Id;//"Eastern Daylight Time";// TimeZoneInfo.Local.SupportsDaylightSavingTime ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
             Console.Write("Prabhu Server TimeZone :" + timezoneid);
             string localUtcTime = Utilities.GetUTCDateTimebyTimeZoneId(date, timezoneid);
-            //Console.Write("Prabhu UTC Date :" + localUtcTime);
+            Console.Write("Prabhu UTC Date :" + localUtcTime);
             string browserDateTime = Utilities.GetLocalDateTimebyTimeZoneId(Convert.ToDateTime(localUtcTime), timezone);
 
             Console.Write("Prabhu Bfowser Date :" + localUtcTime);

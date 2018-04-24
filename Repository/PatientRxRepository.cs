@@ -19,6 +19,47 @@ namespace OneDirect.Repository
             this.context = context;
         }
 
+        public PatientRx getPatientRxbyRxId(string rxid, string patid)
+        {
+            return (from p in context.PatientRx.Include(x => x.Patient).
+                   Include(x => x.Session)
+                   .Where(p => p.RxId == rxid && p.PatientId == Convert.ToInt32(patid))
+                    select p).FirstOrDefault();
+
+        }
+        public PatientRx getPatientRxPain(string rxid, string patid)
+        {
+            return (from p in context.PatientRx.
+                   Include(x => x.Session)
+                   .ThenInclude(y => y.Pain)
+                   .Where(p => p.RxId == rxid && p.PatientId == Convert.ToInt32(patid))
+                    select p).FirstOrDefault();
+
+        }
+        //public List<PatientSummary> getPatientSummary(int id)
+        //{
+
+
+        //    var resulta = (from p in context.Patient.Include(rx => rx.PatientRx).Include(s => s.Session)
+        //                   where p.PatientId == id
+        //                   select new PatientSummary
+        //                   {
+        //                       RxStartDate = p.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault().RxStartDate.Value,
+        //                       RxEndDate = p.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault().RxEndDate.Value,
+        //                       RemainingDays = Convert.ToInt32((DateTime.Now - p.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault().RxEndDate.Value).TotalDays),
+        //                       RxDuration = Convert.ToInt32((p.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault().RxStartDate.Value - p.PatientRx.OrderBy(x => x.RxEndDate).FirstOrDefault().RxEndDate.Value).TotalDays),
+        //                       SessionCompleted = p.PatientRx.OrderBy(x => x.RxStartDate).FirstOrDefault(),
+        //                       FirstUse = p.Session.Count == 0 ? null : p.Session.Min(t => t.SessionDate),
+        //                       LastUse = p.Session.Count == 0 ? null : p.Session.Max(t => t.SessionDate),
+        //                       MaxPain = p.Session.Count == 0 ? 0 : p.Session.Max(t => t.MaxPain),
+        //                       Progress = getProgress(p),
+        //                       TotalSession = p.Session.Count()
+        //                   }).ToList();
+
+
+        //    return resulta;
+
+        //}
         public List<DashboardView> getDashboard(string id)
         {
 
@@ -826,6 +867,10 @@ namespace OneDirect.Repository
 
                     var logs = (from p in context.TransactionLog where p.PatientUserId == lpatient.PatientLoginId select p).ToList();
                     context.TransactionLog.RemoveRange(logs);
+                    context.SaveChanges();
+
+                    var messages = (from p in context.Messages where p.UserId == lpatient.PatientLoginId select p).ToList();
+                    context.Messages.RemoveRange(messages);
                     context.SaveChanges();
 
                     var user = (from p in context.User where p.UserId == lpatient.PatientLoginId select p).ToList();

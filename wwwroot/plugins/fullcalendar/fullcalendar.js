@@ -4663,8 +4663,7 @@ Common interface:
                             ) +
                     '</a>';
             }
-            else
-            {
+            else {
                 titleHtml =
                     '<span class="fc-title">' +
                         (htmlEscape(event.title || '') || '&nbsp;') + // we always want one line of height
@@ -5303,11 +5302,20 @@ Common interface:
             var slotDate; // will be on the view's first day, but we only care about its time
             var minutes;
             var axisHtml;
-
             // Calculate the time for each slot
             while (slotTime < this.maxTime) {
                 slotDate = this.start.clone().time(slotTime); // will be in UTC but that's good. to avoid DST issues
                 minutes = slotDate.minutes();
+                //prabhu
+                //axisHtml =
+                //    '<td class="fc-axis fc-time ' + view.widgetContentClass + '" ' + view.axisStyleAttr() + '>' +
+                //        ((!slotNormal || !minutes) ? // if irregular slot duration, or on the hour, then display the time
+                //            '<span>' + // for matchCellWidths
+                //                htmlEscape(slotDate.format(this.axisFormat)) +
+                //            '</span>' :
+                //            ''
+                //            ) +
+                //    '</td>';
 
                 axisHtml =
                     '<td class="fc-axis fc-time ' + view.widgetContentClass + '" ' + view.axisStyleAttr() + '>' +
@@ -5315,7 +5323,9 @@ Common interface:
                             '<span>' + // for matchCellWidths
                                 htmlEscape(slotDate.format(this.axisFormat)) +
                             '</span>' :
-                            ''
+                            '<span>' + // for matchCellWidths
+                                htmlEscape(slotDate.format(this.axisFormat)) +
+                            '</span>'
                             ) +
                     '</td>';
 
@@ -9629,7 +9639,7 @@ Common interface:
 
         // Sets the scroll value of the scroller to the initial pre-configured state prior to allowing the user to change it
         initializeScroll: function () {
-          
+
             var _this = this;
             var scrollTime = moment.duration(this.opt('scrollTime'));
             var top = this.timeGrid.computeTimeTop(scrollTime);

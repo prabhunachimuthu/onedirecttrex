@@ -65,8 +65,16 @@ namespace OneDirect.Controllers
         public IActionResult Profile(string id)
         {
             User pUser = lIUserRepository.getUser(id);
-            UserViewModel _user = UserExtension.UserToUserViewModel(pUser);
-            return View(_user);
+            if (pUser != null)
+            {
+                UserViewModel _user = UserExtension.UserToUserViewModel(pUser);
+                ViewBag.Name = _user.Name;
+                return View(_user);
+            }
+            else
+            {
+                return View(null);
+            }
         }
         [HttpPost]
         public IActionResult Profile(UserViewModel pUser)

@@ -85,6 +85,9 @@
                                                     </td>
                                                     <td>
                                                         @Html.ActionLink("Edit", "Profile", new { id = item.UserId }, new { @class = "label label-primary" })
+                                                        @Html.ActionLink("Patients", "Index", "Patient", new { id = item.UserId, type = item.Type, name = item.Name }, new { @class = "label label-primary" })
+
+
                                                         @*<a href="therapistdetails.html"><span class="label label-primary">Profile</span></a>*@
                                                     </td>
                                                 </tr>

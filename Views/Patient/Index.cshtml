@@ -1,15 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Mvc
 @using Microsoft.AspNetCore.Http
+@using OneDirect.Helper
 @{
 
 }
 @model IEnumerable<OneDirect.ViewModels.NewPatient>
 <section class="content-header">
 
-    @if (ViewBag.ProviderName != null)
+    @if (ViewBag.Name != null)
     {
         <h1>
-            <span>Patients of </span>@ViewBag.ProviderName
+            <span>Patients of </span>@ViewBag.Name
         </h1>
     }
     else
@@ -56,7 +57,7 @@
                                         <tr role="row">
                                             <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient Name: activate to sort column descending" style="width: 182px;">Patient Name</th>
                                             <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Patient Name: activate to sort column descending" style="width: 182px;">Patient ID</th>
-                                            @if (ViewBag.ProviderType == null && ViewBag.ProviderType != "3")
+                                            @if (ViewBag.Type == null && ViewBag.Type != ConstantsVar.Provider.ToString())
                                             {
                                                 <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Provider Name: activate to sort column descending" style="width: 182px;">Provider Name</th>
                                             }
@@ -81,7 +82,7 @@
                                                 <tr>
                                                     <td>@item.PatientName</td>
                                                     <td>@item.PatientLoginId</td>
-                                                    @if (ViewBag.ProviderType == null && ViewBag.ProviderType != "3")
+                                                    @if (ViewBag.Type == null && ViewBag.Type != ConstantsVar.Provider.ToString())
                                                     {
                                                         <td>@item.ProviderId</td>
                                                     }

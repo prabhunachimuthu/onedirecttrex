@@ -9,6 +9,7 @@ namespace OneDirect.Repository.Interface
 {
     public interface IPatient
     {
+        List<Patient> GetPatientByProviderId(string providerid);
         PatientLoginView PatientLoginsReturnPatientLoginViewUsingPatientLoginId(string patientloinId, string PIN);
         Patient GetPatientByPatientID(int patientId);
         PatientLoginView PatientLoginsReturnPatientLoginView(string patientPhone, string PIN);

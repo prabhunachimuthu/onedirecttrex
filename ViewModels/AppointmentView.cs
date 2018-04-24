@@ -125,5 +125,10 @@ namespace OneDirect.ViewModels
         public string Support_EndTime { get; set; }
         public string Therapist_StartTime { get; set; }
         public string Therapist_EndTime { get; set; }
+        public string SlotDuration { get; set; }
+        public string Support_StartSlot { get; set; }
+        public string Support_EndSlot { get; set; }
+        public string Therapist_StartSlot { get; set; }
+        public string Therapist_EndSlot { get; set; }
     }
 }

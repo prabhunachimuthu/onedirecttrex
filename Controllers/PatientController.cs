@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using OneDirect.ViewModels;
 using OneDirect.Extensions;
 using Microsoft.AspNetCore.Http;
+using OneDirect.Helper;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,37 +33,43 @@ namespace OneDirect.Controllers
 
 
         // GET: /<controller>/
-        public IActionResult Index(string provider = "", string ptype = "", string providername = "")
+        public IActionResult Index(string id = "", string type = "", string name = "")
         {
             var response = new Dictionary<string, object>();
             try
             {
-                if (!String.IsNullOrEmpty(ptype) && ptype == "3")
+               
+                if (!String.IsNullOrEmpty(type))
                 {
-                    ViewBag.ProviderType = ptype;
-                    ViewBag.ProviderName = providername;
+                    ViewBag.Type = type;
+                    ViewBag.Name = name;
                 }
+                string userid = HttpContext.Session.GetString("UserId");
                 string _uType = HttpContext.Session.GetString("UserType");
-                if (!String.IsNullOrEmpty(provider))
+                if (!String.IsNullOrEmpty(id))
                 {
-                    HttpContext.Session.SetString("UserId", provider);
-                    _uType = ptype;
+                    userid = id;
+                    // HttpContext.Session.SetString("UserId", id);
+                }
+                if (!String.IsNullOrEmpty(type))
+                {
+                    _uType = type;
                 }
                 List<NewPatient> pUsera = null;
                 List<User> pUser = new List<Models.User>();
                 logger.LogDebug("Pain Post Start");
 
                 if (_uType != "2" && _uType != "3")
-                    pUsera = lIUserRepository.getPatientListByType(1);
+                    pUsera = lIUserRepository.getPatientListByType(ConstantsVar.Admin);
                 else if (_uType == "3")
                 {
-                    pUsera = lIUserRepository.getPatientListByProviderId(HttpContext.Session.GetString("UserId"));
+                    pUsera = lIUserRepository.getPatientListByProviderId(id);
                     // pUsera = pUser.GroupBy(u => u.UserId, (key, group) => group.First()).ToList();
                     // pUsera= UserExtension.UserToUserViewModelList(pUser);
                 }
                 else
                 {
-                    pUsera = lIUserRepository.getUserListByTherapistId(HttpContext.Session.GetString("UserId"));
+                    pUsera = lIUserRepository.getUserListByTherapistId(id);
                     // pUser = pUser.GroupBy(u => u.UserId, (key, group) => group.First()).ToList();
                     // pUsera = UserExtension.UserToUserViewModelList(pUser);
                 }

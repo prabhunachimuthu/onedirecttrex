@@ -24,7 +24,7 @@ namespace OneDirect.Models
         public virtual DbSet<User> User { get; set; }
 
         public OneDirectContext(DbContextOptions<OneDirectContext> options)
-         : base(options)
+        : base(options)
         { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -278,37 +278,34 @@ namespace OneDirect.Models
 
             modelBuilder.Entity<Messages>(entity =>
             {
-                entity.HasIndex(e => e.ReceiverId)
-                    .HasName("fki_fx_pain_userId_receiver");
+                entity.HasKey(e => e.MsgHeaderId)
+                    .HasName("PK_Messages");
 
-                entity.HasIndex(e => e.SenderId)
-                    .HasName("fki_fx_pain_user");
+                entity.Property(e => e.MsgHeaderId).HasColumnName("MsgHeaderID");
 
-                entity.Property(e => e.MessageId)
+                entity.Property(e => e.BodyText).IsRequired();
+
+                entity.Property(e => e.PatientId)
                     .IsRequired()
-                    .HasColumnName("MessageID");
+                    .HasColumnName("PatientID");
 
-                entity.Property(e => e.ReadStatus).HasDefaultValueSql("0");
-
-                entity.Property(e => e.ReceiverId)
+                entity.Property(e => e.UserId)
                     .IsRequired()
-                    .HasColumnName("ReceiverID");
+                    .HasColumnName("UserID");
 
-                entity.Property(e => e.SenderId)
-                    .IsRequired()
-                    .HasColumnName("SenderID");
+                entity.Property(e => e.UserName).IsRequired();
 
-                entity.HasOne(d => d.Receiver)
-                    .WithMany(p => p.MessagesReceiver)
-                    .HasForeignKey(d => d.ReceiverId)
+                entity.HasOne(d => d.Patient)
+                    .WithMany(p => p.MessagesPatient)
+                    .HasForeignKey(d => d.PatientId)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("fx_pain_userId_receiver");
+                    .HasConstraintName("fx_patient_user");
 
-                entity.HasOne(d => d.Sender)
-                    .WithMany(p => p.MessagesSender)
-                    .HasForeignKey(d => d.SenderId)
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.MessagesUser)
+                    .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("fx_pain_user");
+                    .HasConstraintName("fx_user_userId");
             });
 
             modelBuilder.Entity<Pain>(entity =>
